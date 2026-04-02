@@ -1,4 +1,5 @@
 let usersService = require('../services/users.service');
+let cartModel = require('../schemas/carts');
 let jwt = require('jsonwebtoken');
 
 const JWT_SECRET = 'BAOCAOCHIUTHU4';
@@ -7,6 +8,11 @@ module.exports = {
     register: async function (req, res) {
         try {
             let result = await usersService.create(req.body);
+
+            // Tạo cart rỗng cho user mới
+            let newCart = new cartModel({ user: result._id });
+            await newCart.save();
+
             res.send({ message: "Đăng ký thành công", data: result });
         } catch (err) {
             res.status(400).send({ message: err.message });
