@@ -108,6 +108,45 @@
             "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
             "url": "http://localhost:3000/api/v1/auth/logout"
           }
+        },
+        {
+          "name": "POST changepassword",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/auth/changepassword",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"Admin@123\",\n  \"newPassword\": \"Admin@456\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST forgotpassword",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/auth/forgotpassword",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@test.com\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST resetpassword",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/auth/resetpassword/{{reset_token}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"password\": \"NewPass@123\"\n}"
+            }
+          }
         }
       ]
     },
@@ -343,6 +382,108 @@
           }
         }
       ]
+    },
+    {
+      "name": "UPLOAD",
+      "item": [
+        {
+          "name": "POST upload single image",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/upload/single",
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+            }
+          }
+        },
+        {
+          "name": "POST upload multiple images",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/upload/multiple",
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "files", "type": "file", "src": [] }]
+            }
+          }
+        },
+        {
+          "name": "GET view image by filename",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/upload/{{filename}}"
+          }
+        },
+        {
+          "name": "POST import Excel",
+          "request": {
+            "method": "POST",
+            "url": "http://localhost:3000/api/v1/upload/excel",
+            "body": {
+              "mode": "formdata",
+              "formdata": [{ "key": "file", "type": "file", "src": "" }]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CATEGORIES",
+      "item": [
+        {
+          "name": "GET all categories",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/categories"
+          }
+        },
+        {
+          "name": "GET category by id",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/categories/{{category_id}}"
+          }
+        },
+        {
+          "name": "POST create category",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/categories",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Áo\",\n  \"description\": \"Danh mục áo\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT update category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/categories/{{category_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Mô tả đã cập nhật\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE category (soft delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/categories/{{category_id}}"
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -365,6 +506,11 @@
       "key": "product_id",
       "value": "PASTE_PRODUCT_ID_HERE",
       "description": "Thay bằng _id của product sau khi tạo"
+    },
+    {
+      "key": "category_id",
+      "value": "PASTE_CATEGORY_ID_HERE",
+      "description": "Thay bằng _id của category sau khi tạo"
     }
   ]
 }

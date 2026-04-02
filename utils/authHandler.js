@@ -1,4 +1,5 @@
 let jwt = require('jsonwebtoken');
+let userModel = require('../schemas/users');
 
 const JWT_SECRET = 'BAOCAOCHIUTHU4';
 
@@ -27,6 +28,20 @@ module.exports = {
             next();
         } catch (err) {
             return res.status(403).send({ message: "Token không hợp lệ hoặc đã hết hạn" });
+        }
+    },
+
+    // Middleware kiểm tra role — truyền vào danh sách role được phép
+    // Ví dụ: checkRole(['USER']) → chỉ USER được vào, ADMIN bị chặn
+    checkRole: function (allowedRoles) {
+        return async function (req, res, next) {
+            let user = await userModel.findById(req.userId).populate('role');
+            if (!user) return res.status(403).send({ message: "Không tìm thấy user" });
+
+            if (!allowedRoles.includes(user.role.name)) {
+                return res.status(403).send({ message: "Bạn không có quyền truy cập" });
+            }
+            next();
         }
     }
 }
