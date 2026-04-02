@@ -3,11 +3,17 @@ let cartModel = require('../schemas/carts');
 module.exports = {
     getCart: async function (userId) {
         let cart = await cartModel.findOne({ user: userId });
-        return cart ? cart.items : [];
+        if (!cart) {
+            cart = await cartModel.create({ user: userId });
+        }
+        return cart.items;
     },
 
     addItems: async function (userId, product, quantity) {
         let cart = await cartModel.findOne({ user: userId });
+        if (!cart) {
+            cart = await cartModel.create({ user: userId });
+        }
 
         // Kiểm tra product đã có trong giỏ chưa
         let index = cart.items.findIndex(item => item.product == product);
@@ -26,6 +32,9 @@ module.exports = {
 
     decreaseItems: async function (userId, product, quantity) {
         let cart = await cartModel.findOne({ user: userId });
+        if (!cart) {
+            cart = await cartModel.create({ user: userId });
+        }
 
         let index = cart.items.findIndex(item => item.product == product);
 

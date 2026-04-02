@@ -24,6 +24,8 @@ app.use('/api/v1/users', require('./routes/users'));
 app.use('/api/v1/products', require('./routes/products'));
 app.use('/api/v1/inventories', require('./routes/inventories'));
 app.use('/api/v1/carts', require('./routes/carts'));
+app.use('/api/v1/upload', require('./routes/upload'));
+app.use('/api/v1/categories', require('./routes/categories'));
 
 
 app.use(function (req, res, next) {

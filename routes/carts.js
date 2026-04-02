@@ -1,11 +1,11 @@
 var express = require('express');
 var router = express.Router();
 let cartsController = require('../controllers/carts.controller');
-let { checkLogin } = require('../utils/authHandler');
+let { checkLogin, checkRole } = require('../utils/authHandler');
 
-// Tất cả cart routes đều cần đăng nhập
-router.get('/', checkLogin, cartsController.getCart);
-router.post('/add-items', checkLogin, cartsController.addItems);
-router.post('/decrease-items', checkLogin, cartsController.decreaseItems);
+// Chỉ USER mới được dùng cart, ADMIN bị chặn
+router.get('/', checkLogin, checkRole(['USER']), cartsController.getCart);
+router.post('/add-items', checkLogin, checkRole(['USER']), cartsController.addItems);
+router.post('/decrease-items', checkLogin, checkRole(['USER']), cartsController.decreaseItems);
 
 module.exports = router;

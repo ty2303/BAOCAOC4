@@ -38,5 +38,32 @@ module.exports = {
 
     checkPassword: function (inputPassword, hashedPassword) {
         return bcrypt.compareSync(inputPassword, hashedPassword);
+    },
+
+
+    changePassword: async function (id, oldPassword, newPassword) {
+        let user = await userModel.findById(id);
+        if (!user) return null;
+
+        // Kiểm tra mật khẩu cũ có đúng không
+        let isMatch = bcrypt.compareSync(oldPassword, user.password);
+        if (!isMatch) throw new Error('Mật khẩu cũ không đúng');
+
+        // Gán mật khẩu mới → pre('save') hook sẽ tự hash
+        user.password = newPassword;
+        await user.save();
+        return user;
+    },
+
+    findByEmail: async function (email) {
+        return await userModel.findOne({ email: email, isDeleted: false });
+    },
+
+    findByForgotToken: async function (token) {
+        return await userModel.findOne({
+            forgotpasswordToken: token,
+            forgotpasswordTokenExp: { $gt: new Date() }  // token còn hạn
+        });
     }
+
 }

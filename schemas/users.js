@@ -28,11 +28,11 @@ const userSchema = new mongoose.Schema(
     { timestamps: true }
 );
 // Tự động hash password trước khi save
-userSchema.pre('save', function (next) {
-    let salt = bcrypt.genSaltSync(10);
-    this.password = bcrypt.hashSync(
-        this.password, salt
-    )
+userSchema.pre('save', async function () {
+    if (this.isModified('password')) {
+        let salt = bcrypt.genSaltSync(10);
+        this.password = bcrypt.hashSync(this.password, salt);
+    }
 })
 module.exports = mongoose.model('user', userSchema);
 

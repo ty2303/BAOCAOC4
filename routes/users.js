@@ -1,9 +1,10 @@
 var express = require('express');
 var router = express.Router();
 let usersController = require('../controllers/users.controller');
-let { checkLogin } = require('../utils/authHandler');
+let { checkLogin, checkRole } = require('../utils/authHandler');
 
-router.get('/', checkLogin, usersController.getAll);
+
+router.get('/', checkLogin, checkRole(['ADMIN']), usersController.getAll);
 router.get('/:id', checkLogin, usersController.getById);
 router.post('/', usersController.create);
 router.put('/:id', checkLogin, usersController.update);
