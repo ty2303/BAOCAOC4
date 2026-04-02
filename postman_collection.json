@@ -166,6 +166,104 @@
           }
         }
       ]
+    },
+    {
+      "name": "PRODUCTS",
+      "item": [
+        {
+          "name": "GET all products",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/v1/products?title=&minPrice=0&maxPrice=1000000&page=1&limit=5",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "title", "value": "" },
+                { "key": "minPrice", "value": "0" },
+                { "key": "maxPrice", "value": "1000000" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "5" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET product by id",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/products/{{product_id}}"
+          }
+        },
+        {
+          "name": "POST create product",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/products",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Áo Thun Nam\",\n  \"sku\": \"ATN-001\",\n  \"description\": \"Áo thun nam chất liệu cotton\",\n  \"price\": 150000,\n  \"category\": \"Áo\",\n  \"images\": [\"https://example.com/image1.jpg\"],\n  \"stock\": 100\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT update product",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/products/{{product_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"price\": 180000,\n  \"description\": \"Mô tả đã cập nhật\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE product (soft delete)",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/products/{{product_id}}"
+          }
+        },
+        {
+          "name": "GET search products by title",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/v1/products?title=áo&page=1&limit=10",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "title", "value": "áo" },
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET filter products by price",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "http://localhost:3000/api/v1/products?minPrice=100000&maxPrice=300000",
+              "protocol": "http",
+              "host": ["localhost"],
+              "port": "3000",
+              "path": ["api", "v1", "products"],
+              "query": [
+                { "key": "minPrice", "value": "100000" },
+                { "key": "maxPrice", "value": "300000" }
+              ]
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -183,6 +281,11 @@
       "key": "token",
       "value": "PASTE_TOKEN_HERE",
       "description": "Thay bằng token nhận được sau khi login"
+    },
+    {
+      "key": "product_id",
+      "value": "PASTE_PRODUCT_ID_HERE",
+      "description": "Thay bằng _id của product sau khi tạo"
     }
   ]
 }
