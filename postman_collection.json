@@ -264,6 +264,85 @@
           }
         }
       ]
+    },
+    {
+      "name": "INVENTORIES",
+      "item": [
+        {
+          "name": "GET all inventories",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/inventories"
+          }
+        },
+        {
+          "name": "POST increase-stock",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/inventories/increase-stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 50\n}"
+            }
+          }
+        },
+        {
+          "name": "POST decrease-stock",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/inventories/decrease-stock",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 10\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "CARTS",
+      "item": [
+        {
+          "name": "GET my cart",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/carts"
+          }
+        },
+        {
+          "name": "POST add-items",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/carts/add-items",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 2\n}"
+            }
+          }
+        },
+        {
+          "name": "POST decrease-items",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/carts/decrease-items",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 1\n}"
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": [
