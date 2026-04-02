@@ -18,6 +18,8 @@ mongoose.connection.on('connected', () => {
 
 //route
 app.use('/api/v1/roles', require('./routes/roles'));
+app.use('/api/v1/auth', require('./routes/auth'));
+app.use('/api/v1/users', require('./routes/users'));
 
 app.use(function (req, res, next) {
     next(createError(404));

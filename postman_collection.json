@@ -1,0 +1,188 @@
+{
+  "info": {
+    "name": "BAOCAO API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "ROLES",
+      "item": [
+        {
+          "name": "GET all roles",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/roles"
+          }
+        },
+        {
+          "name": "GET role by id",
+          "request": {
+            "method": "GET",
+            "url": "http://localhost:3000/api/v1/roles/{{role_id}}"
+          }
+        },
+        {
+          "name": "POST create role ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"ADMIN\",\n  \"description\": \"Quản trị viên\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST create role USER",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/roles",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"USER\",\n  \"description\": \"Người dùng thường\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT update role",
+          "request": {
+            "method": "PUT",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/roles/{{role_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Mô tả đã cập nhật\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE role (soft delete)",
+          "request": {
+            "method": "DELETE",
+            "url": "http://localhost:3000/api/v1/roles/{{role_id}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "AUTH",
+      "item": [
+        {
+          "name": "POST register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\",\n  \"email\": \"admin@test.com\",\n  \"role\": \"{{role_id}}\"\n}"
+            }
+          }
+        },
+        {
+          "name": "POST login",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "GET me",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/auth/me"
+          }
+        },
+        {
+          "name": "POST logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/auth/logout"
+          }
+        }
+      ]
+    },
+    {
+      "name": "USERS",
+      "item": [
+        {
+          "name": "GET all users",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/users"
+          }
+        },
+        {
+          "name": "GET user by id",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/users/{{user_id}}"
+          }
+        },
+        {
+          "name": "POST create user",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "http://localhost:3000/api/v1/users",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"User@123\",\n  \"email\": \"user1@test.com\",\n  \"role\": \"{{role_id}}\",\n  \"fullName\": \"Nguyen Van A\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT update user",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/users/{{user_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Nguyen Van B\"\n}"
+            }
+          }
+        },
+        {
+          "name": "DELETE user (soft delete)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/users/{{user_id}}"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "role_id",
+      "value": "PASTE_ROLE_ID_HERE",
+      "description": "Thay bằng _id của role sau khi tạo"
+    },
+    {
+      "key": "user_id",
+      "value": "PASTE_USER_ID_HERE",
+      "description": "Thay bằng _id của user sau khi tạo"
+    },
+    {
+      "key": "token",
+      "value": "PASTE_TOKEN_HERE",
+      "description": "Thay bằng token nhận được sau khi login"
+    }
+  ]
+}
