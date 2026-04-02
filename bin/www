@@ -1,0 +1,22 @@
+var app = require('../app');
+var http = require('http');
+
+var port = process.env.PORT || 3456;
+app.set('port', port);
+
+var server = http.createServer(app);
+
+server.listen(port);
+
+server.on('listening', function () {
+    console.log('Server chạy tại http://localhost:' + port);
+});
+
+server.on('error', function (error) {
+    if (error.code === 'EADDRINUSE') {
+        console.error('Port ' + port + ' đang bị chiếm');
+        process.exit(1);
+    } else {
+        throw error;
+    }
+});
