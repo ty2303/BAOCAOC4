@@ -3,32 +3,41 @@ const orderModel = require("../schemas/order");
 const transactionModel = require("../schemas/transactions");
 const cartModel = require("../schemas/carts");
 const inventoryModel = require("../schemas/inventories");
+const addressesService = require("./addresses.service");
 
 module.exports = {
 	createOrder: async (userId, orderData) => {
 		const session = await mongoose.startSession();
 		session.startTransaction();
+
 		try {
-			// populate lấy price của product
+			// Populate de lay price cua product trong gio hang
 			const cart = await cartModel
 				.findOne({ user: userId })
+				.session(session)
 				.populate("items.product");
+
 			if (!cart || cart.items.length === 0) {
-				throw new Error("Giỏ hàng trống");
+				throw new Error("Gio hang trong");
 			}
-			// kiểm tra tồn kho và tính tổng
+
+			// Kiem tra ton kho va tinh tong tien
 			let totalAmount = 0;
 			const orderItems = [];
+
 			for (const item of cart.items) {
 				if (!item.product) {
-					throw new Error("Không tìm thấy sản phẩm trong giỏ hàng");
+					throw new Error("Khong tim thay san pham trong gio hang");
 				}
+
 				const inventory = await inventoryModel.findOne({
 					product: item.product._id,
-				});
+				}).session(session);
+
 				if (!inventory || inventory.stock < item.quantity) {
-					throw new Error("Sản phẩm không đủ hàng");
+					throw new Error("San pham khong du hang");
 				}
+
 				totalAmount += item.product.price * item.quantity;
 				orderItems.push({
 					productId: item.product._id,
@@ -36,25 +45,44 @@ module.exports = {
 					price: item.product.price,
 				});
 			}
-			// tạo order
+
+			const shippingAddress = await addressesService.getOrderAddressText(userId, orderData);
+
 			const newOrder = new orderModel({
 				userId: userId,
 				items: orderItems,
 				totalAmount: totalAmount,
-				shippingAddress: orderData.shippingAddress,
+				shippingAddress: shippingAddress,
 				paymentMethod: orderData.paymentMethod,
 				status: "pending",
 			});
+
 			await newOrder.save({ session });
-			// trừ tồn kho
+
+			// Tru ton kho theo kieu atomic de tranh oversell khi nhieu nguoi mua cung luc
+			// Co the hieu gan giong if-else JS thuong:
+			// if (inventory.stock >= item.quantity) {
+			//     inventory.stock = inventory.stock - item.quantity;
+			//     inventory.soldCount = inventory.soldCount + item.quantity;
+			//     await inventory.save();
+			// } else {
+			//     throw new Error("San pham khong du hang");
+			// }
 			for (const item of orderItems) {
-				await inventoryModel.findOneAndUpdate(
-					{ product: item.productId },
+				const updatedInventory = await inventoryModel.findOneAndUpdate(
+					{
+						product: item.productId,
+						stock: { $gte: item.quantity },
+					},
 					{ $inc: { stock: -item.quantity, soldCount: item.quantity } },
-					{ session },
+					{ new: true, session },
 				);
+
+				if (!updatedInventory) {
+					throw new Error("San pham khong du hang");
+				}
 			}
-			// tạo transaction record
+
 			const transaction = new transactionModel({
 				orderId: newOrder._id,
 				userId: userId,
@@ -63,14 +91,15 @@ module.exports = {
 				status: "pending",
 				paymentMethod: orderData.paymentMethod,
 			});
+
 			await transaction.save({ session });
-			// xóa giỏ hàng
+
 			await cartModel.findOneAndUpdate(
 				{ user: userId },
 				{ $set: { items: [] } },
 				{ session },
 			);
-			// commit
+
 			await session.commitTransaction();
 			session.endSession();
 			return newOrder;
