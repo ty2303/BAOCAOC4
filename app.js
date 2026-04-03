@@ -26,6 +26,8 @@ app.use('/api/v1/inventories', require('./routes/inventories'));
 app.use('/api/v1/carts', require('./routes/carts'));
 app.use('/api/v1/upload', require('./routes/upload'));
 app.use('/api/v1/categories', require('./routes/categories'));
+app.use('/api/v1/orders', require('./routes/orders'));
+app.use('/api/v1/transactions', require('./routes/transactions'));
 
 
 app.use(function (req, res, next) {
