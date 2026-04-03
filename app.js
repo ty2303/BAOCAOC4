@@ -29,6 +29,8 @@ app.use('/api/v1/carts', require('./routes/carts'));
 app.use('/api/v1/wishlists', require('./routes/wishlists'));
 app.use('/api/v1/upload', require('./routes/upload'));
 app.use('/api/v1/categories', require('./routes/categories'));
+app.use('/api/v1/coupons', require('./routes/coupons'));
+
 app.use('/api/v1/chats', require('./routes/chats'));
 app.use('/api/v1/reviews', require('./routes/reviews'));
 
