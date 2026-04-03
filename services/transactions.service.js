@@ -1,13 +1,13 @@
 const mongoose = require("mongoose");
 const transactionModel = require("../schemas/transactions");
 const orderModel = require("../schemas/order");
-const inventoryModel = require("../schemas/inventory");
+const inventoryModel = require("../schemas/inventories");
 
 module.exports = {
 	// lấy lịch sử giao dịch của 1 user
 	getByUser: async (userId, query) => {
-		const page = query.page || 1;
-		const limit = query.limit || 10;
+		const page = Number(query.page) || 1;
+		const limit = Number(query.limit) || 10;
 		const status = query.status;
 
 		const filter = { userId: userId };
@@ -27,11 +27,9 @@ module.exports = {
 
 	// lấy giao dịch theo order
 	getByOrder: async (orderId) => {
-		const transaction = await transactionModel.findOne({ orderId: orderId });
-		if (!transaction) {
-			return null;
-		}
-		return transaction;
+		return await transactionModel
+			.find({ orderId: orderId })
+			.sort({ createdAt: -1 });
 	},
 
 	// lấy chi tiết 1 giao dịch
@@ -79,13 +77,20 @@ module.exports = {
 					"Đơn hàng không thể hoàn tiền (trạng thái: " + order.status + ")",
 				);
 			}
+			const existingRefund = await transactionModel.findOne({
+				orderId: orderId,
+				type: "refund",
+			});
+			if (existingRefund) {
+				throw new Error("Đơn hàng này đã được hoàn tiền");
+			}
 			// hủy order
 			order.status = "cancelled";
 			await order.save({ session });
 			// cộng lại tồn kho
 			for (const item of order.items) {
 				await inventoryModel.findOneAndUpdate(
-					{ product: item.product },
+					{ product: item.productId },
 					{ $inc: { stock: +item.quantity, soldCount: -item.quantity } },
 					{ session },
 				);

@@ -4,7 +4,7 @@ let Schema = mongoose.Schema;
 
 let transactionSchema = new Schema({
     // orderId (ObjectId, ref 'order')
-    orderId: {type: mongoose.Types.ObjectId, ref: 'order', unique: true},
+    orderId: {type: mongoose.Types.ObjectId, ref: 'order', required: true},
 
     userId: {type: Schema.Types.ObjectId, ref: 'user', required: true},
 
@@ -18,4 +18,7 @@ let transactionSchema = new Schema({
     
 }, { timestamps: true}
 )
+
+transactionSchema.index({ orderId: 1, type: 1 }, { unique: true });
+
 module.exports = mongoose.model('transaction', transactionSchema);
