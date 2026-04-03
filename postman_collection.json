@@ -1057,6 +1057,50 @@
                                                   }
                                   }
                               ]
+                 },
+                 {
+                     "name":  "NOTIFICATIONS",
+                     "item":  [
+                                  {
+                                      "name":  "GET my notifications",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/notifications"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PATCH mark all notifications as read",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/notifications/read-all"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PATCH mark one notification as read",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/notifications/{{notification_id}}/read"
+                                                  }
+                                  }
+                              ]
                  }
              ],
     "variable":  [
@@ -1114,6 +1158,11 @@
                          "key":  "review_id",
                          "value":  "PASTE_REVIEW_ID_HERE",
                          "description":  "Thay bang _id cua review can xoa"
+                     },
+                     {
+                         "key":  "notification_id",
+                         "value":  "PASTE_NOTIFICATION_ID_HERE",
+                         "description":  "Thay bang _id cua notification can danh dau da doc"
                      }
                  ]
 }

@@ -32,7 +32,7 @@ app.use('/api/v1/categories', require('./routes/categories'));
 app.use('/api/v1/coupons', require('./routes/coupons'));
 app.use('/api/v1/orders', require('./routes/orders'));
 app.use('/api/v1/transactions', require('./routes/transactions'));
-
+app.use('/api/v1/notifications', require('./routes/notifications'));
 app.use('/api/v1/chats', require('./routes/chats'));
 app.use('/api/v1/reviews', require('./routes/reviews'));
 

@@ -4,6 +4,7 @@ var jwt = require('jsonwebtoken');
 let userModel = require('../schemas/users');
 let chatsService = require('../services/chats.service');
 let { Server } = require('socket.io');
+let notificationsService = require('../services/notifications.service');
 
 const JWT_SECRET = 'BAOCAOCHIUTHU4';
 
@@ -102,6 +103,34 @@ io.on('connection', function (socket) {
                 socket.roleName,
                 content
             );
+
+            let senderUser = await userModel.findById(socket.userId);
+
+            if (socket.roleName === 'USER') {
+                let users = await userModel.find({ isDeleted: false }).populate('role');
+
+                let adminUsers = users.filter(function (item) {
+                    return item.role && item.role.name === 'ADMIN';
+                });
+
+                for (let admin of adminUsers) {
+                    await notificationsService.create({
+                        user: admin._id,
+                        title: 'Tin nhan moi',
+                        content: (senderUser ? senderUser.username : 'User') + ' vua gui tin nhan',
+                        type: 'CHAT',
+                        link: '/admin-chat.html'
+                    });
+                }
+            } else if (socket.roleName === 'ADMIN') {
+                await notificationsService.create({
+                    user: targetUserId,
+                    title: 'Admin da tra loi',
+                    content: (senderUser ? senderUser.username : 'Admin') + ' vua tra loi tin nhan cua ban',
+                    type: 'CHAT',
+                    link: '/user-chat.html'
+                });
+            }
 
             await newMessage.populate({
                 path: 'sender',
