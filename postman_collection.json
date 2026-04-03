@@ -835,6 +835,105 @@
                               ]
                  },
                  {
+                     "name":  "ADDRESSES",
+                     "item":  [
+                                  {
+                                      "name":  "GET my addresses",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET address by id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create address",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"fullName\": \"Nguyen Van A\",\n  \"phone\": \"0901234567\",\n  \"province\": \"Ha Noi\",\n  \"district\": \"Thanh Xuan\",\n  \"ward\": \"Thuong Dinh\",\n  \"detail\": \"123 Nguyen Trai\",\n  \"isDefault\": true\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update address",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"fullName\": \"Nguyen Van B\",\n  \"phone\": \"0988888888\",\n  \"province\": \"Ha Noi\",\n  \"district\": \"Cau Giay\",\n  \"ward\": \"Dich Vong\",\n  \"detail\": \"456 Xuan Thuy\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PATCH set default address",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}/default"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE address",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
                      "name":  "COUPONS",
                      "item":  [
                                   {
@@ -958,7 +1057,7 @@
                      "name":  "ORDERS",
                      "item":  [
                                   {
-                                      "name":  "POST create order",
+                                      "name":  "POST create order by text address",
                                       "request":  {
                                                       "method":  "POST",
                                                       "header":  [
@@ -975,6 +1074,27 @@
                                                       "body":  {
                                                                    "mode":  "raw",
                                                                    "raw":  "{\n  \"shippingAddress\": \"123 Nguyen Trai, Ha Noi\",\n  \"paymentMethod\": \"cod\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create order by address id",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/orders",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"addressId\": \"{{address_id}}\",\n  \"paymentMethod\": \"cod\"\n}"
                                                                }
                                                   }
                                   }
@@ -1138,6 +1258,11 @@
                          "key":  "chat_user_id",
                          "value":  "PASTE_CHAT_USER_ID_HERE",
                          "description":  "Thay bang _id cua USER can xem lich su chat"
+                     },
+                     {
+                         "key":  "address_id",
+                         "value":  "PASTE_ADDRESS_ID_HERE",
+                         "description":  "Thay bang _id cua dia chi sau khi tao"
                      },
                      {
                          "key":  "coupon_id",
