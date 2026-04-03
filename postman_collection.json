@@ -773,6 +773,454 @@
                                                   }
                                   }
                               ]
+                 },
+                 {
+                     "name":  "WISHLISTS",
+                     "item":  [
+                                  {
+                                      "name":  "GET my wishlist",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/wishlists"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST add wishlist item",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/wishlists/add-items",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST remove wishlist item",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/wishlists/remove-items",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\"\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "ADDRESSES",
+                     "item":  [
+                                  {
+                                      "name":  "GET my addresses",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET address by id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create address",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"fullName\": \"Nguyen Van A\",\n  \"phone\": \"0901234567\",\n  \"province\": \"Ha Noi\",\n  \"district\": \"Thanh Xuan\",\n  \"ward\": \"Thuong Dinh\",\n  \"detail\": \"123 Nguyen Trai\",\n  \"isDefault\": true\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update address",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"fullName\": \"Nguyen Van B\",\n  \"phone\": \"0988888888\",\n  \"province\": \"Ha Noi\",\n  \"district\": \"Cau Giay\",\n  \"ward\": \"Dich Vong\",\n  \"detail\": \"456 Xuan Thuy\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PATCH set default address",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}/default"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE address",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/addresses/{{address_id}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "COUPONS",
+                     "item":  [
+                                  {
+                                      "name":  "GET all coupons (ADMIN)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/coupons"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET coupon by id (ADMIN)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/coupons/{{coupon_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create coupon (ADMIN)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/coupons",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"code\": \"NEWUSER10\",\n  \"description\": \"Giam gia cho user moi\",\n  \"discount\": 10,\n  \"discountType\": \"PERCENT\",\n  \"minOrderValue\": 100000,\n  \"maxUses\": 100,\n  \"startDate\": \"2026-04-04T00:00:00.000Z\",\n  \"endDate\": \"2026-12-31T23:59:59.000Z\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update coupon (ADMIN)",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/coupons/{{coupon_id}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"description\": \"Cap nhat mo ta coupon\",\n  \"discount\": 15,\n  \"minOrderValue\": 200000,\n  \"maxUses\": 200\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE coupon (ADMIN)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/coupons/{{coupon_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PATCH toggle active coupon (ADMIN)",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/coupons/{{coupon_id}}/toggle-active"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST validate coupon (USER)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/coupons/validate",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"code\": \"NEWUSER10\",\n  \"orderValue\": 500000\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "ORDERS",
+                     "item":  [
+                                  {
+                                      "name":  "POST create order by text address",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/orders",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"shippingAddress\": \"123 Nguyen Trai, Ha Noi\",\n  \"paymentMethod\": \"cod\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create order by address id",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/orders",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"addressId\": \"{{address_id}}\",\n  \"paymentMethod\": \"cod\"\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "TRANSACTIONS",
+                     "item":  [
+                                  {
+                                      "name":  "GET my transactions",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/transactions?page=1&limit=10"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET transaction by order",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/transactions/order/{{order_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET transaction by id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/transactions/{{transaction_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update transaction status",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/transactions/{{transaction_id}}/status",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"status\": \"success\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST refund by order",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/transactions/order/{{order_id}}/refund"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "NOTIFICATIONS",
+                     "item":  [
+                                  {
+                                      "name":  "GET my notifications",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/notifications"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PATCH mark all notifications as read",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/notifications/read-all"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PATCH mark one notification as read",
+                                      "request":  {
+                                                      "method":  "PATCH",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/notifications/{{notification_id}}/read"
+                                                  }
+                                  }
+                              ]
                  }
              ],
     "variable":  [
@@ -812,9 +1260,34 @@
                          "description":  "Thay bang _id cua USER can xem lich su chat"
                      },
                      {
+                         "key":  "address_id",
+                         "value":  "PASTE_ADDRESS_ID_HERE",
+                         "description":  "Thay bang _id cua dia chi sau khi tao"
+                     },
+                     {
+                         "key":  "coupon_id",
+                         "value":  "PASTE_COUPON_ID_HERE",
+                         "description":  "Thay bang _id cua coupon sau khi tao"
+                     },
+                     {
+                         "key":  "order_id",
+                         "value":  "PASTE_ORDER_ID_HERE",
+                         "description":  "Thay bang _id cua order sau khi tao"
+                     },
+                     {
+                         "key":  "transaction_id",
+                         "value":  "PASTE_TRANSACTION_ID_HERE",
+                         "description":  "Thay bang _id cua transaction can test"
+                     },
+                     {
                          "key":  "review_id",
                          "value":  "PASTE_REVIEW_ID_HERE",
                          "description":  "Thay bang _id cua review can xoa"
+                     },
+                     {
+                         "key":  "notification_id",
+                         "value":  "PASTE_NOTIFICATION_ID_HERE",
+                         "description":  "Thay bang _id cua notification can danh dau da doc"
                      }
                  ]
 }
