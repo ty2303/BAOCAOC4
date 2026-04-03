@@ -527,6 +527,88 @@
           }
         }
       ]
+    },
+    {
+      "name": "COUPONS",
+      "item": [
+        {
+          "name": "GET all coupons (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/coupons"
+          }
+        },
+        {
+          "name": "GET coupon by id (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/coupons/{{coupon_id}}"
+          }
+        },
+        {
+          "name": "POST create coupon (ADMIN)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/coupons",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"GIAM10\",\n  \"description\": \"Giảm 10% cho đơn hàng\",\n  \"discount\": 10,\n  \"discountType\": \"PERCENT\",\n  \"minOrderValue\": 100000,\n  \"maxUses\": 100,\n  \"startDate\": \"2026-01-01T00:00:00.000Z\",\n  \"endDate\": \"2026-12-31T23:59:59.000Z\"\n}"
+            }
+          }
+        },
+        {
+          "name": "PUT update coupon (ADMIN)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/coupons/{{coupon_id}}",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"description\": \"Mã giảm giá đã cập nhật\",\n  \"discount\": 15\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH toggle-active coupon (ADMIN)",
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/coupons/{{coupon_id}}/toggle-active"
+          }
+        },
+        {
+          "name": "DELETE coupon (soft delete) (ADMIN)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
+            "url": "http://localhost:3000/api/v1/coupons/{{coupon_id}}"
+          }
+        },
+        {
+          "name": "POST validate coupon (USER)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{token}}" }
+            ],
+            "url": "http://localhost:3000/api/v1/coupons/validate",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"GIAM10\",\n  \"orderValue\": 150000\n}"
+            }
+          }
+        }
+      ]
     }
   ],
   "variable": [
@@ -554,6 +636,11 @@
       "key": "category_id",
       "value": "PASTE_CATEGORY_ID_HERE",
       "description": "Thay bằng _id của category sau khi tạo"
+    },
+    {
+      "key": "coupon_id",
+      "value": "PASTE_COUPON_ID_HERE",
+      "description": "Thay bằng _id của coupon sau khi tạo"
     }
   ]
 }
