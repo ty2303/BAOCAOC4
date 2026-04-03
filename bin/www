@@ -1,20 +1,134 @@
 var app = require('../app');
 var http = require('http');
+var jwt = require('jsonwebtoken');
+let userModel = require('../schemas/users');
+let chatsService = require('../services/chats.service');
+let { Server } = require('socket.io');
+
+const JWT_SECRET = 'BAOCAOCHIUTHU4';
 
 var port = process.env.PORT || 3000;
 app.set('port', port);
 
 var server = http.createServer(app);
 
+let io = new Server(server, {
+    cors: {
+        origin: '*'
+    }
+});
+
+io.use(async function (socket, next) {
+    try {
+        let token = socket.handshake.auth.token;
+        if (!token) {
+            return next(new Error('Ban chua dang nhap'));
+        }
+
+        let result = jwt.verify(token, JWT_SECRET);
+        let user = await userModel.findById(result.id).populate('role');
+
+        if (!user) {
+            return next(new Error('Khong tim thay user'));
+        }
+
+        socket.userId = user._id.toString();
+        socket.roleName = user.role.name;
+        next();
+    } catch (err) {
+        next(new Error('Token khong hop le hoac da het han'));
+    }
+});
+
+io.on('connection', function (socket) {
+    console.log('Socket da ket noi:', socket.userId, '-', socket.roleName);
+
+    if (socket.roleName === 'USER') {
+        let roomName = 'user_' + socket.userId;
+        socket.join(roomName);
+        console.log('USER vao room:', roomName);
+    }
+
+    socket.on('join-room', async function (data) {
+        try {
+            if (socket.roleName !== 'ADMIN') {
+                return socket.emit('error-message', { message: 'Ban khong co quyen vao room nay' });
+            }
+
+            let userId = data.userId;
+            let user = await userModel.findById(userId);
+
+            if (!user) {
+                return socket.emit('error-message', { message: 'Khong tim thay user' });
+            }
+
+            let roomName = 'user_' + userId;
+            socket.join(roomName);
+
+            socket.emit('joined-room', {
+                room: roomName,
+                userId: userId
+            });
+
+            console.log('ADMIN vao room:', roomName);
+        } catch (err) {
+            socket.emit('error-message', { message: err.message });
+        }
+    });
+
+    socket.on('send-message', async function (data) {
+        try {
+            let content = data && data.content ? data.content.trim() : '';
+            if (!content) {
+                return socket.emit('error-message', { message: 'Noi dung khong duoc de trong' });
+            }
+
+            let targetUserId;
+
+            if (socket.roleName === 'USER') {
+                targetUserId = socket.userId;
+            } else if (socket.roleName === 'ADMIN') {
+                targetUserId = data.userId;
+                if (!targetUserId) {
+                    return socket.emit('error-message', { message: 'Admin phai gui kem userId' });
+                }
+            } else {
+                return socket.emit('error-message', { message: 'Role khong hop le' });
+            }
+
+            let newMessage = await chatsService.createMessage(
+                targetUserId,
+                socket.userId,
+                socket.roleName,
+                content
+            );
+
+            await newMessage.populate({
+                path: 'sender',
+                select: 'username fullName role'
+            });
+
+            let roomName = 'user_' + targetUserId;
+            io.to(roomName).emit('new-message', newMessage);
+        } catch (err) {
+            socket.emit('error-message', { message: err.message });
+        }
+    });
+
+    socket.on('disconnect', function () {
+        console.log('Socket da ngat:', socket.userId);
+    });
+});
+
 server.listen(port);
 
 server.on('listening', function () {
-    console.log('Server chạy tại http://localhost:' + port);
+    console.log('Server chay tai http://localhost:' + port);
 });
 
 server.on('error', function (error) {
     if (error.code === 'EADDRINUSE') {
-        console.error('Port ' + port + ' đang bị chiếm');
+        console.error('Port ' + port + ' dang bi chiem');
         process.exit(1);
     } else {
         throw error;
