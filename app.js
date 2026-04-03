@@ -26,6 +26,7 @@ app.use('/api/v1/users', require('./routes/users'));
 app.use('/api/v1/products', require('./routes/products'));
 app.use('/api/v1/inventories', require('./routes/inventories'));
 app.use('/api/v1/carts', require('./routes/carts'));
+app.use('/api/v1/wishlists', require('./routes/wishlists'));
 app.use('/api/v1/upload', require('./routes/upload'));
 app.use('/api/v1/categories', require('./routes/categories'));
 app.use('/api/v1/chats', require('./routes/chats'));
@@ -40,4 +41,4 @@ app.use(function (err, req, res, next) {
     res.send(err.message);
 });
 
-module.exports = app; 
+module.exports = app;
