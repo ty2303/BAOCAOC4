@@ -1,516 +1,820 @@
-{
-  "info": {
-    "name": "BAOCAO API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
-  },
-  "item": [
-    {
-      "name": "ROLES",
-      "item": [
-        {
-          "name": "GET all roles",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:3000/api/v1/roles"
-          }
-        },
-        {
-          "name": "GET role by id",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:3000/api/v1/roles/{{role_id}}"
-          }
-        },
-        {
-          "name": "POST create role ADMIN",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/roles",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"ADMIN\",\n  \"description\": \"Quản trị viên\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST create role USER",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/roles",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"USER\",\n  \"description\": \"Người dùng thường\"\n}"
-            }
-          }
-        },
-        {
-          "name": "PUT update role",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/roles/{{role_id}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"description\": \"Mô tả đã cập nhật\"\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE role (soft delete)",
-          "request": {
-            "method": "DELETE",
-            "url": "http://localhost:3000/api/v1/roles/{{role_id}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "AUTH",
-      "item": [
-        {
-          "name": "POST register",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/auth/register",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\",\n  \"email\": \"admin@test.com\",\n  \"role\": \"{{role_id}}\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST login",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/auth/login",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\"\n}"
-            }
-          }
-        },
-        {
-          "name": "GET me",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "http://localhost:3000/api/v1/auth/me"
-          }
-        },
-        {
-          "name": "POST logout",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "http://localhost:3000/api/v1/auth/logout"
-          }
-        },
-        {
-          "name": "POST changepassword",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "http://localhost:3000/api/v1/auth/changepassword",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"oldPassword\": \"Admin@123\",\n  \"newPassword\": \"Admin@456\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST forgotpassword",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/auth/forgotpassword",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@test.com\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST resetpassword",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/auth/resetpassword/{{reset_token}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"password\": \"NewPass@123\"\n}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "USERS",
-      "item": [
-        {
-          "name": "GET all users",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "http://localhost:3000/api/v1/users"
-          }
-        },
-        {
-          "name": "GET user by id",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "http://localhost:3000/api/v1/users/{{user_id}}"
-          }
-        },
-        {
-          "name": "POST create user",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/users",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"User@123\",\n  \"email\": \"user1@test.com\",\n  \"role\": \"{{role_id}}\",\n  \"fullName\": \"Nguyen Van A\"\n}"
-            }
-          }
-        },
-        {
-          "name": "PUT update user",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "http://localhost:3000/api/v1/users/{{user_id}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"fullName\": \"Nguyen Van B\"\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE user (soft delete)",
-          "request": {
-            "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "http://localhost:3000/api/v1/users/{{user_id}}"
-          }
-        }
-      ]
-    },
-    {
-      "name": "PRODUCTS",
-      "item": [
-        {
-          "name": "GET all products",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:3000/api/v1/products?title=&minPrice=0&maxPrice=1000000&page=1&limit=5",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "products"],
-              "query": [
-                { "key": "title", "value": "" },
-                { "key": "minPrice", "value": "0" },
-                { "key": "maxPrice", "value": "1000000" },
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "5" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET product by id",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:3000/api/v1/products/{{product_id}}"
-          }
-        },
-        {
-          "name": "POST create product",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/products",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"Áo Thun Nam\",\n  \"sku\": \"ATN-001\",\n  \"description\": \"Áo thun nam chất liệu cotton\",\n  \"price\": 150000,\n  \"category\": \"Áo\",\n  \"images\": [\"https://example.com/image1.jpg\"],\n  \"stock\": 100\n}"
-            }
-          }
-        },
-        {
-          "name": "PUT update product",
-          "request": {
-            "method": "PUT",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/products/{{product_id}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"price\": 180000,\n  \"description\": \"Mô tả đã cập nhật\"\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE product (soft delete)",
-          "request": {
-            "method": "DELETE",
-            "url": "http://localhost:3000/api/v1/products/{{product_id}}"
-          }
-        },
-        {
-          "name": "GET search products by title",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:3000/api/v1/products?title=áo&page=1&limit=10",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "products"],
-              "query": [
-                { "key": "title", "value": "áo" },
-                { "key": "page", "value": "1" },
-                { "key": "limit", "value": "10" }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET filter products by price",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "http://localhost:3000/api/v1/products?minPrice=100000&maxPrice=300000",
-              "protocol": "http",
-              "host": ["localhost"],
-              "port": "3000",
-              "path": ["api", "v1", "products"],
-              "query": [
-                { "key": "minPrice", "value": "100000" },
-                { "key": "maxPrice", "value": "300000" }
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "INVENTORIES",
-      "item": [
-        {
-          "name": "GET all inventories",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:3000/api/v1/inventories"
-          }
-        },
-        {
-          "name": "POST increase-stock",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/inventories/increase-stock",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 50\n}"
-            }
-          }
-        },
-        {
-          "name": "POST decrease-stock",
-          "request": {
-            "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
-            "url": "http://localhost:3000/api/v1/inventories/decrease-stock",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 10\n}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "CARTS",
-      "item": [
-        {
-          "name": "GET my cart",
-          "request": {
-            "method": "GET",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "http://localhost:3000/api/v1/carts"
-          }
-        },
-        {
-          "name": "POST add-items",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "http://localhost:3000/api/v1/carts/add-items",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 2\n}"
-            }
-          }
-        },
-        {
-          "name": "POST decrease-items",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "http://localhost:3000/api/v1/carts/decrease-items",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 1\n}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "UPLOAD",
-      "item": [
-        {
-          "name": "POST upload single image",
-          "request": {
-            "method": "POST",
-            "url": "http://localhost:3000/api/v1/upload/single",
-            "body": {
-              "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
-            }
-          }
-        },
-        {
-          "name": "POST upload multiple images",
-          "request": {
-            "method": "POST",
-            "url": "http://localhost:3000/api/v1/upload/multiple",
-            "body": {
-              "mode": "formdata",
-              "formdata": [{ "key": "files", "type": "file", "src": [] }]
-            }
-          }
-        },
-        {
-          "name": "GET view image by filename",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:3000/api/v1/upload/{{filename}}"
-          }
-        },
-        {
-          "name": "POST import Excel",
-          "request": {
-            "method": "POST",
-            "url": "http://localhost:3000/api/v1/upload/excel",
-            "body": {
-              "mode": "formdata",
-              "formdata": [{ "key": "file", "type": "file", "src": "" }]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "CATEGORIES",
-      "item": [
-        {
-          "name": "GET all categories",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:3000/api/v1/categories"
-          }
-        },
-        {
-          "name": "GET category by id",
-          "request": {
-            "method": "GET",
-            "url": "http://localhost:3000/api/v1/categories/{{category_id}}"
-          }
-        },
-        {
-          "name": "POST create category",
-          "request": {
-            "method": "POST",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "http://localhost:3000/api/v1/categories",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Áo\",\n  \"description\": \"Danh mục áo\"\n}"
-            }
-          }
-        },
-        {
-          "name": "PUT update category",
-          "request": {
-            "method": "PUT",
-            "header": [
-              { "key": "Content-Type", "value": "application/json" },
-              { "key": "Authorization", "value": "Bearer {{token}}" }
-            ],
-            "url": "http://localhost:3000/api/v1/categories/{{category_id}}",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"description\": \"Mô tả đã cập nhật\"\n}"
-            }
-          }
-        },
-        {
-          "name": "DELETE category (soft delete)",
-          "request": {
-            "method": "DELETE",
-            "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }],
-            "url": "http://localhost:3000/api/v1/categories/{{category_id}}"
-          }
-        }
-      ]
-    }
-  ],
-  "variable": [
-    {
-      "key": "role_id",
-      "value": "PASTE_ROLE_ID_HERE",
-      "description": "Thay bằng _id của role sau khi tạo"
-    },
-    {
-      "key": "user_id",
-      "value": "PASTE_USER_ID_HERE",
-      "description": "Thay bằng _id của user sau khi tạo"
-    },
-    {
-      "key": "token",
-      "value": "PASTE_TOKEN_HERE",
-      "description": "Thay bằng token nhận được sau khi login"
-    },
-    {
-      "key": "product_id",
-      "value": "PASTE_PRODUCT_ID_HERE",
-      "description": "Thay bằng _id của product sau khi tạo"
-    },
-    {
-      "key": "category_id",
-      "value": "PASTE_CATEGORY_ID_HERE",
-      "description": "Thay bằng _id của category sau khi tạo"
-    }
-  ]
+﻿{
+    "info":  {
+                 "name":  "BAOCAO API",
+                 "schema":  "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+             },
+    "item":  [
+                 {
+                     "name":  "ROLES",
+                     "item":  [
+                                  {
+                                      "name":  "GET all roles",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/roles"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET role by id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/roles/{{role_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create role ADMIN",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/roles",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"ADMIN\",\n  \"description\": \"Quáº£n trá»‹ viÃªn\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create role USER",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/roles",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"USER\",\n  \"description\": \"NgÆ°á»i dÃ¹ng thÆ°á»ng\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update role",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/roles/{{role_id}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"description\": \"MÃ´ táº£ Ä‘Ã£ cáº­p nháº­t\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE role (soft delete)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "url":  "http://localhost:3000/api/v1/roles/{{role_id}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "AUTH",
+                     "item":  [
+                                  {
+                                      "name":  "POST register",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/auth/register",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\",\n  \"email\": \"admin@test.com\",\n  \"role\": \"{{role_id}}\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST login",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/auth/login",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET me",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/auth/me"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST logout",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/auth/logout"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST changepassword",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/auth/changepassword",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"oldPassword\": \"Admin@123\",\n  \"newPassword\": \"Admin@456\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST forgotpassword",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/auth/forgotpassword",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"email\": \"admin@test.com\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST resetpassword",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/auth/resetpassword/{{reset_token}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"password\": \"NewPass@123\"\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "USERS",
+                     "item":  [
+                                  {
+                                      "name":  "GET all users",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/users"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET user by id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/users/{{user_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create user",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/users",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"username\": \"user1\",\n  \"password\": \"User@123\",\n  \"email\": \"user1@test.com\",\n  \"role\": \"{{role_id}}\",\n  \"fullName\": \"Nguyen Van A\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update user",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/users/{{user_id}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"fullName\": \"Nguyen Van B\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE user (soft delete)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/users/{{user_id}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "PRODUCTS",
+                     "item":  [
+                                  {
+                                      "name":  "GET all products",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "raw":  "http://localhost:3000/api/v1/products?title=\u0026minPrice=0\u0026maxPrice=1000000\u0026page=1\u0026limit=5",
+                                                                  "protocol":  "http",
+                                                                  "host":  [
+                                                                               "localhost"
+                                                                           ],
+                                                                  "port":  "3000",
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "products"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "title",
+                                                                                    "value":  ""
+                                                                                },
+                                                                                {
+                                                                                    "key":  "minPrice",
+                                                                                    "value":  "0"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "maxPrice",
+                                                                                    "value":  "1000000"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "page",
+                                                                                    "value":  "1"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "limit",
+                                                                                    "value":  "5"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET product by id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/products/{{product_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create product",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/products",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"title\": \"Ão Thun Nam\",\n  \"sku\": \"ATN-001\",\n  \"description\": \"Ão thun nam cháº¥t liá»‡u cotton\",\n  \"price\": 150000,\n  \"category\": \"Ão\",\n  \"images\": [\"https://example.com/image1.jpg\"],\n  \"stock\": 100\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update product",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/products/{{product_id}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"price\": 180000,\n  \"description\": \"MÃ´ táº£ Ä‘Ã£ cáº­p nháº­t\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE product (soft delete)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "url":  "http://localhost:3000/api/v1/products/{{product_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET search products by title",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "raw":  "http://localhost:3000/api/v1/products?title=Ã¡o\u0026page=1\u0026limit=10",
+                                                                  "protocol":  "http",
+                                                                  "host":  [
+                                                                               "localhost"
+                                                                           ],
+                                                                  "port":  "3000",
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "products"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "title",
+                                                                                    "value":  "Ã¡o"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "page",
+                                                                                    "value":  "1"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "limit",
+                                                                                    "value":  "10"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET filter products by price",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  {
+                                                                  "raw":  "http://localhost:3000/api/v1/products?minPrice=100000\u0026maxPrice=300000",
+                                                                  "protocol":  "http",
+                                                                  "host":  [
+                                                                               "localhost"
+                                                                           ],
+                                                                  "port":  "3000",
+                                                                  "path":  [
+                                                                               "api",
+                                                                               "v1",
+                                                                               "products"
+                                                                           ],
+                                                                  "query":  [
+                                                                                {
+                                                                                    "key":  "minPrice",
+                                                                                    "value":  "100000"
+                                                                                },
+                                                                                {
+                                                                                    "key":  "maxPrice",
+                                                                                    "value":  "300000"
+                                                                                }
+                                                                            ]
+                                                              }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "INVENTORIES",
+                     "item":  [
+                                  {
+                                      "name":  "GET all inventories",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/inventories"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST increase-stock",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/inventories/increase-stock",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 50\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST decrease-stock",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/inventories/decrease-stock",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 10\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "CARTS",
+                     "item":  [
+                                  {
+                                      "name":  "GET my cart",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/carts"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST add-items",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/carts/add-items",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 2\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST decrease-items",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/carts/decrease-items",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\",\n  \"quantity\": 1\n}"
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "UPLOAD",
+                     "item":  [
+                                  {
+                                      "name":  "POST upload single image",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "url":  "http://localhost:3000/api/v1/upload/single",
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "file",
+                                                                                        "type":  "file",
+                                                                                        "src":  ""
+                                                                                    }
+                                                                                ]
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST upload multiple images",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "url":  "http://localhost:3000/api/v1/upload/multiple",
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "files",
+                                                                                        "type":  "file",
+                                                                                        "src":  [
+
+                                                                                                ]
+                                                                                    }
+                                                                                ]
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET view image by filename",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/upload/{{filename}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST import Excel",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "url":  "http://localhost:3000/api/v1/upload/excel",
+                                                      "body":  {
+                                                                   "mode":  "formdata",
+                                                                   "formdata":  [
+                                                                                    {
+                                                                                        "key":  "file",
+                                                                                        "type":  "file",
+                                                                                        "src":  ""
+                                                                                    }
+                                                                                ]
+                                                               }
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "CATEGORIES",
+                     "item":  [
+                                  {
+                                      "name":  "GET all categories",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/categories"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET category by id",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/categories/{{category_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create category",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/categories",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"name\": \"Ão\",\n  \"description\": \"Danh má»¥c Ã¡o\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT update category",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/categories/{{category_id}}",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"description\": \"MÃ´ táº£ Ä‘Ã£ cáº­p nháº­t\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE category (soft delete)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/categories/{{category_id}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "CHATS",
+                     "item":  [
+                                  {
+                                      "name":  "GET my messages (USER)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/chats/my-messages"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET all chat rooms (ADMIN)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/chats/rooms"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET messages by user id (ADMIN)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/chats/messages/{{chat_user_id}}"
+                                                  }
+                                  }
+                              ]
+                 },
+                 {
+                     "name":  "REVIEWS",
+                     "item":  [
+                                  {
+                                      "name":  "GET reviews by product",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/reviews/product/{{product_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create review (USER)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/reviews",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\",\n  \"rating\": 5,\n  \"comment\": \"San pham tot, dung nhu mo ta\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE review (ADMIN)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/reviews/{{review_id}}"
+                                                  }
+                                  }
+                              ]
+                 }
+             ],
+    "variable":  [
+                     {
+                         "key":  "role_id",
+                         "value":  "PASTE_ROLE_ID_HERE",
+                         "description":  "Thay bang _id cua role sau khi tao"
+                     },
+                     {
+                         "key":  "user_id",
+                         "value":  "PASTE_USER_ID_HERE",
+                         "description":  "Thay bang _id cua user sau khi tao"
+                     },
+                     {
+                         "key":  "token",
+                         "value":  "PASTE_TOKEN_HERE",
+                         "description":  "Thay bang token USER nhan duoc sau khi login"
+                     },
+                     {
+                         "key":  "admin_token",
+                         "value":  "PASTE_ADMIN_TOKEN_HERE",
+                         "description":  "Thay bang token ADMIN nhan duoc sau khi login"
+                     },
+                     {
+                         "key":  "product_id",
+                         "value":  "PASTE_PRODUCT_ID_HERE",
+                         "description":  "Thay bang _id cua product sau khi tao"
+                     },
+                     {
+                         "key":  "category_id",
+                         "value":  "PASTE_CATEGORY_ID_HERE",
+                         "description":  "Thay bang _id cua category sau khi tao"
+                     },
+                     {
+                         "key":  "chat_user_id",
+                         "value":  "PASTE_CHAT_USER_ID_HERE",
+                         "description":  "Thay bang _id cua USER can xem lich su chat"
+                     },
+                     {
+                         "key":  "review_id",
+                         "value":  "PASTE_REVIEW_ID_HERE",
+                         "description":  "Thay bang _id cua review can xoa"
+                     }
+                 ]
 }
