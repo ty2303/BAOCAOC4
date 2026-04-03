@@ -29,7 +29,7 @@ module.exports = {
         // Nếu 1 cái lỗi → rollback cả 2 (Transaction)
         let session = await mongoose.startSession();
         session.startTransaction();
-        try {
+        try { 
             let newProduct = new productModel({
                 title: data.title,
                 sku: data.sku,

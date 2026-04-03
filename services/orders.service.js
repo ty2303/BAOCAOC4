@@ -20,6 +20,9 @@ module.exports = {
 			let totalAmount = 0;
 			const orderItems = [];
 			for (const item of cart.items) {
+				if (!item.product) {
+					throw new Error("Không tìm thấy sản phẩm trong giỏ hàng");
+				}
 				const inventory = await inventoryModel.findOne({
 					product: item.product._id,
 				});
@@ -28,7 +31,7 @@ module.exports = {
 				}
 				totalAmount += item.product.price * item.quantity;
 				orderItems.push({
-					product: item.product._id,
+					productId: item.product._id,
 					quantity: item.quantity,
 					price: item.product.price,
 				});
@@ -46,7 +49,7 @@ module.exports = {
 			// trừ tồn kho
 			for (const item of orderItems) {
 				await inventoryModel.findOneAndUpdate(
-					{ product: item.product },
+					{ product: item.productId },
 					{ $inc: { stock: -item.quantity, soldCount: item.quantity } },
 					{ session },
 				);
