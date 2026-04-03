@@ -1,0 +1,69 @@
+{
+  "info": {
+    "name": "BAOCAO CHATS API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "CHATS",
+      "item": [
+        {
+          "name": "GET my messages (USER)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": "http://localhost:3000/api/v1/chats/my-messages"
+          }
+        },
+        {
+          "name": "GET all chat rooms (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "http://localhost:3000/api/v1/chats/rooms"
+          }
+        },
+        {
+          "name": "GET messages by user id (ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{admin_token}}"
+              }
+            ],
+            "url": "http://localhost:3000/api/v1/chats/messages/{{chat_user_id}}"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "token",
+      "value": "PASTE_TOKEN_HERE",
+      "description": "Thay bang token USER nhan duoc sau khi login"
+    },
+    {
+      "key": "admin_token",
+      "value": "PASTE_ADMIN_TOKEN_HERE",
+      "description": "Thay bang token ADMIN nhan duoc sau khi login"
+    },
+    {
+      "key": "chat_user_id",
+      "value": "PASTE_CHAT_USER_ID_HERE",
+      "description": "Thay bang _id cua USER can xem lich su chat"
+    }
+  ]
+}
