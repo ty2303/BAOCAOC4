@@ -727,6 +727,52 @@
                                                   }
                                   }
                               ]
+                 },
+                 {
+                     "name":  "REVIEWS",
+                     "item":  [
+                                  {
+                                      "name":  "GET reviews by product",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "url":  "http://localhost:3000/api/v1/reviews/product/{{product_id}}"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST create review (USER)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/reviews",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"product\": \"{{product_id}}\",\n  \"rating\": 5,\n  \"comment\": \"San pham tot, dung nhu mo ta\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "DELETE review (ADMIN)",
+                                      "request":  {
+                                                      "method":  "DELETE",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/reviews/{{review_id}}"
+                                                  }
+                                  }
+                              ]
                  }
              ],
     "variable":  [
@@ -764,6 +810,11 @@
                          "key":  "chat_user_id",
                          "value":  "PASTE_CHAT_USER_ID_HERE",
                          "description":  "Thay bang _id cua USER can xem lich su chat"
+                     },
+                     {
+                         "key":  "review_id",
+                         "value":  "PASTE_REVIEW_ID_HERE",
+                         "description":  "Thay bang _id cua review can xoa"
                      }
                  ]
 }
