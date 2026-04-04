@@ -85,7 +85,7 @@
             "name": "AUTH",
             "item": [
                 {
-                    "name": "POST register",
+                    "name": "POST register (default USER)",
                     "request": {
                         "method": "POST",
                         "header": [
@@ -97,7 +97,7 @@
                         "url": "http://localhost:3000/api/v1/auth/register",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"Admin@123\",\n  \"email\": \"admin@test.com\",\n  \"role\": \"{{role_id}}\"\n}"
+                            "raw": "{\n  \"username\": \"{{user_username}}\",\n  \"password\": \"{{user_password}}\",\n  \"email\": \"user@test.com\",\n  \"fullName\": \"User Demo\"\n}"
                         }
                     }
                 },
@@ -114,7 +114,7 @@
                         "url": "http://localhost:3000/api/v1/auth/login",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}"
+                            "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\",\n  \"accountType\": \"ADMIN\"\n}"
                         }
                     }
                 },
@@ -131,7 +131,7 @@
                         ],
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"username\": \"{{user_username}}\",\n  \"password\": \"{{user_password}}\"\n}"
+                            "raw": "{\n  \"username\": \"{{user_username}}\",\n  \"password\": \"{{user_password}}\",\n  \"accountType\": \"USER\"\n}"
                         }
                     }
                 },
@@ -260,7 +260,24 @@
                         "url": "http://localhost:3000/api/v1/users",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"User@123\",\n  \"email\": \"user1@test.com\",\n  \"role\": \"{{role_id}}\",\n  \"fullName\": \"Nguyen Van A\"\n}"
+                            "raw": "{\n  \"username\": \"user1\",\n  \"password\": \"User@123\",\n  \"email\": \"user1@test.com\",\n  \"role\": \"{{user_role_id}}\",\n  \"fullName\": \"Nguyen Van A\"\n}"
+                        }
+                    }
+                },
+                {
+                    "name": "POST create admin",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "url": "http://localhost:3000/api/v1/users",
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\",\n  \"email\": \"admin@test.com\",\n  \"role\": \"{{admin_role_id}}\",\n  \"fullName\": \"Admin Demo\"\n}"
                         }
                     }
                 },
@@ -352,44 +369,58 @@
                     }
                 },
                 {
-                    "name": "POST create product",
+                    "name": "POST create product (ADMIN sample)",
                     "request": {
                         "method": "POST",
                         "header": [
                             {
                                 "key": "Content-Type",
                                 "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
                             }
                         ],
                         "url": "http://localhost:3000/api/v1/products",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"title\": \"Ão Thun Nam\",\n  \"sku\": \"ATN-001\",\n  \"description\": \"Ão thun nam cháº¥t liá»‡u cotton\",\n  \"price\": 150000,\n  \"category\": \"Ão\",\n  \"images\": [\"https://example.com/image1.jpg\"],\n  \"stock\": 100\n}"
+                            "raw": "{\n  \"title\": \"Ao Thun Nam\",\n  \"sku\": \"ATN-001\",\n  \"description\": \"Ao thun nam chat lieu cotton\",\n  \"price\": 150000,\n  \"category\": \"Ao\",\n  \"images\": [\n    \"http://localhost:3000/api/v1/upload/{{product_image_1}}\",\n    \"http://localhost:3000/api/v1/upload/{{product_image_2}}\"\n  ],\n  \"stock\": 100\n}"
                         }
                     }
                 },
                 {
-                    "name": "PUT update product",
+                    "name": "PUT update product (ADMIN sample)",
                     "request": {
                         "method": "PUT",
                         "header": [
                             {
                                 "key": "Content-Type",
                                 "value": "application/json"
+                            },
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
                             }
                         ],
                         "url": "http://localhost:3000/api/v1/products/{{product_id}}",
                         "body": {
                             "mode": "raw",
-                            "raw": "{\n  \"price\": 180000,\n  \"description\": \"MÃ´ táº£ Ä‘Ã£ cáº­p nháº­t\"\n}"
+                            "raw": "{\n  \"price\": 180000,\n  \"description\": \"Mo ta da cap nhat\",\n  \"images\": [\n    \"http://localhost:3000/api/v1/upload/{{product_image_1}}\",\n    \"http://localhost:3000/api/v1/upload/{{product_image_2}}\",\n    \"http://localhost:3000/api/v1/upload/{{product_image_3}}\"\n  ]\n}"
                         }
                     }
                 },
                 {
-                    "name": "DELETE product (soft delete)",
+                    "name": "DELETE product (soft delete, ADMIN sample)",
                     "request": {
                         "method": "DELETE",
-                        "url": "http://localhost:3000/api/v1/products/{{product_id}}"
+                        "url": "http://localhost:3000/api/v1/products/{{product_id}}",
+                        "header": [
+                            {
+                                "key": "Authorization",
+                                "value": "Bearer {{token}}"
+                            }
+                        ]
                     }
                 },
                 {
@@ -397,7 +428,7 @@
                     "request": {
                         "method": "GET",
                         "url": {
-                            "raw": "http://localhost:3000/api/v1/products?title=Ã¡o&page=1&limit=10",
+                            "raw": "http://localhost:3000/api/v1/products?title=Ao&page=1&limit=10",
                             "protocol": "http",
                             "host": [
                                 "localhost"
@@ -411,7 +442,7 @@
                             "query": [
                                 {
                                     "key": "title",
-                                    "value": "Ã¡o"
+                                    "value": "Ao"
                                 },
                                 {
                                     "key": "page",
@@ -1412,6 +1443,16 @@
             "description": "Thay bang _id cua role sau khi tao"
         },
         {
+            "key": "user_role_id",
+            "value": "PASTE_USER_ROLE_ID_HERE",
+            "description": "Thay bang _id cua role USER de tao tai khoan user bang /users"
+        },
+        {
+            "key": "admin_role_id",
+            "value": "PASTE_ADMIN_ROLE_ID_HERE",
+            "description": "Thay bang _id cua role ADMIN de tao tai khoan admin bang /users"
+        },
+        {
             "key": "user_id",
             "value": "PASTE_USER_ID_HERE",
             "description": "Thay bang _id cua user sau khi tao"
@@ -1470,6 +1511,26 @@
             "key": "notification_id",
             "value": "PASTE_NOTIFICATION_ID_HERE",
             "description": "Thay bang _id cua notification can danh dau da doc"
+        },
+        {
+            "key": "filename",
+            "value": "PASTE_FILENAME_HERE",
+            "description": "Ten file anh sau khi upload de test GET /upload/:filename"
+        },
+        {
+            "key": "product_image_1",
+            "value": "PASTE_PRODUCT_IMAGE_1_FILENAME_HERE",
+            "description": "Ten file anh dau tien sau khi upload de gan vao product.images"
+        },
+        {
+            "key": "product_image_2",
+            "value": "PASTE_PRODUCT_IMAGE_2_FILENAME_HERE",
+            "description": "Ten file anh thu hai sau khi upload de gan vao product.images"
+        },
+        {
+            "key": "product_image_3",
+            "value": "PASTE_PRODUCT_IMAGE_3_FILENAME_HERE",
+            "description": "Ten file anh thu ba sau khi upload de cap nhat product.images"
         },
         {
             "key": "admin_username",

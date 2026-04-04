@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đăng nhập / Đăng ký - ShopVN</title>
+    <title>Dang nhap / Dang ky - ShopVN</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/layout/styles.css">
 </head>
@@ -11,13 +11,13 @@
 
 <div class="auth-logo">
     <a href="/home/">ShopVN</a>
-    <p>Mua sắm thông minh</p>
+    <p>Mua sam thong minh</p>
 </div>
 
 <div class="auth-card">
     <div class="tab-switcher">
-        <button class="active" id="btn-tab-login" onclick="switchTab('login')">Đăng nhập</button>
-        <button id="btn-tab-register" onclick="switchTab('register')">Đăng ký</button>
+        <button class="active" id="btn-tab-login" onclick="switchTab('login')">Dang nhap</button>
+        <button id="btn-tab-register" onclick="switchTab('register')">Dang ky</button>
     </div>
 
     <div class="alert-box" id="alert-box"></div>
@@ -25,34 +25,40 @@
     <div class="tab-panel active" id="panel-login">
         <form id="form-login" novalidate>
             <div class="mb-3">
-                <label class="form-label">Tên đăng nhập</label>
-                <input type="text" id="login-username" class="form-control" placeholder="Nhập username" autocomplete="username">
+                <label class="form-label">Loai tai khoan</label>
+                <select id="login-account-type" class="form-select">
+                    <option value="USER">USER</option>
+                    <option value="ADMIN">ADMIN</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Ten dang nhap</label>
+                <input type="text" id="login-username" class="form-control" placeholder="Nhap username" autocomplete="username">
             </div>
 
             <div class="mb-2">
-                <label class="form-label">Mật khẩu</label>
+                <label class="form-label">Mat khau</label>
                 <div class="input-group">
-                    <span class="input-group-text" id="toggle-login-pw">👁</span>
-                    <input type="password" id="login-password" class="form-control" placeholder="Nhập mật khẩu" autocomplete="current-password">
+                    <button class="input-group-text" id="toggle-login-pw" type="button">Show</button>
+                    <input type="password" id="login-password" class="form-control" placeholder="Nhap mat khau" autocomplete="current-password">
                 </div>
             </div>
 
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <label class="d-flex align-items-center gap-2 mb-0" style="font-size:.85rem; cursor:pointer;">
-                    <input type="checkbox" id="remember-me"> Ghi nhớ đăng nhập
+                    <input type="checkbox" id="remember-me"> Ghi nho dang nhap
                 </label>
-                <a href="#" style="font-size:.85rem;">Quên mật khẩu?</a>
+                <a href="#" style="font-size:.85rem;">Quen mat khau?</a>
             </div>
 
-            <button type="submit" class="btn btn-primary btn-submit" id="btn-login">
-                Đăng nhập
-            </button>
+            <button type="submit" class="btn btn-primary btn-submit" id="btn-login">Dang nhap</button>
         </form>
 
-        <div class="divider">hoặc</div>
+        <div class="divider">hoac</div>
         <p class="text-center mb-0" style="font-size:.88rem;">
-            Chưa có tài khoản?
-            <a href="#" onclick="switchTab('register'); return false;" class="fw-semibold">Đăng ký ngay</a>
+            Chua co tai khoan?
+            <a href="#" onclick="switchTab('register'); return false;" class="fw-semibold">Dang ky ngay</a>
         </p>
     </div>
 
@@ -60,11 +66,11 @@
         <form id="form-register" novalidate>
             <div class="row g-3 mb-3">
                 <div class="col-6">
-                    <label class="form-label">Tên đăng nhập <span class="text-danger">*</span></label>
+                    <label class="form-label">Ten dang nhap <span class="text-danger">*</span></label>
                     <input type="text" id="reg-username" class="form-control" placeholder="username" autocomplete="username">
                 </div>
                 <div class="col-6">
-                    <label class="form-label">Họ tên</label>
+                    <label class="form-label">Ho ten</label>
                     <input type="text" id="reg-fullname" class="form-control" placeholder="Nguyen Van A">
                 </div>
             </div>
@@ -75,38 +81,34 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Mật khẩu <span class="text-danger">*</span></label>
+                <label class="form-label">Mat khau <span class="text-danger">*</span></label>
                 <div class="input-group">
-                    <span class="input-group-text" id="toggle-reg-pw">👁</span>
-                    <input type="password" id="reg-password" class="form-control" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password">
+                    <button class="input-group-text" id="toggle-reg-pw" type="button">Show</button>
+                    <input type="password" id="reg-password" class="form-control" placeholder="Toi thieu 6 ky tu" autocomplete="new-password">
                 </div>
                 <div class="pw-bar-wrap"><div class="pw-bar" id="pw-bar"></div></div>
                 <div id="pw-hint" style="font-size:.76rem; margin-top:4px; color:#6c757d;"></div>
             </div>
 
             <div class="mb-3">
-                <label class="form-label">
-                    Role ID <span class="text-danger">*</span>
-                    <a href="/api/v1/roles" target="_blank" class="ms-1" style="font-size:.76rem;">(lấy từ API)</a>
-                </label>
-                <input type="text" id="reg-role" class="form-control" placeholder="Dán _id của role vào đây">
+                <label class="form-label">Loai tai khoan</label>
+                <input type="text" class="form-control" value="USER" disabled>
+                <div class="form-text mt-1">Dang ky moi tu dong tao tai khoan USER.</div>
             </div>
 
-            <button type="submit" class="btn btn-success btn-submit" id="btn-register">
-                Tạo tài khoản
-            </button>
+            <button type="submit" class="btn btn-success btn-submit" id="btn-register">Tao tai khoan</button>
         </form>
 
-        <div class="divider">hoặc</div>
+        <div class="divider">hoac</div>
         <p class="text-center mb-0" style="font-size:.88rem;">
-            Đã có tài khoản?
-            <a href="#" onclick="switchTab('login'); return false;" class="fw-semibold">Đăng nhập</a>
+            Da co tai khoan?
+            <a href="#" onclick="switchTab('login'); return false;" class="fw-semibold">Dang nhap</a>
         </p>
     </div>
 </div>
 
 <div class="back-home">
-    <a href="/home/">← Quay về trang chủ</a>
+    <a href="/home/">&larr; Quay ve trang chu</a>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
@@ -136,10 +138,12 @@ if (window.location.hash === '#register') {
 function bindToggle(toggleId, inputId) {
     document.getElementById(toggleId).addEventListener('click', function () {
         let inp = document.getElementById(inputId);
-        inp.type = inp.type === 'password' ? 'text' : 'password';
-        this.textContent = inp.type === 'password' ? '👁' : '🙈';
+        let isPassword = inp.type === 'password';
+        inp.type = isPassword ? 'text' : 'password';
+        this.textContent = isPassword ? 'Hide' : 'Show';
     });
 }
+
 bindToggle('toggle-login-pw', 'login-password');
 bindToggle('toggle-reg-pw', 'reg-password');
 
@@ -191,23 +195,53 @@ function setLoading(id, on, label) {
         : label;
 }
 
+async function hydrateLoggedInUser(token, fallbackRole) {
+    let redirectUrl = fallbackRole === 'ADMIN' ? '/admin/' : '/home/';
+    try {
+        let meRes = await fetch(BASE + '/auth/me', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+        if (meRes.ok) {
+            let me = await meRes.json();
+            let roleName = me.role && me.role.name ? me.role.name : (fallbackRole || '');
+            localStorage.setItem('userId', me._id || '');
+            localStorage.setItem('username', me.username || '');
+            localStorage.setItem('role', roleName);
+            redirectUrl = roleName === 'ADMIN' ? '/admin/' : '/home/';
+        } else if (fallbackRole) {
+            localStorage.setItem('role', fallbackRole);
+        }
+    } catch {
+        if (fallbackRole) {
+            localStorage.setItem('role', fallbackRole);
+        }
+    }
+    return redirectUrl;
+}
+
 document.getElementById('form-login').addEventListener('submit', async function (e) {
     e.preventDefault();
     hideAlert();
 
     let username = document.getElementById('login-username').value.trim();
     let password = document.getElementById('login-password').value;
+    let accountType = document.getElementById('login-account-type').value;
     if (!username || !password) {
         showAlert('Vui long dien day du thong tin.');
         return;
     }
 
-    setLoading('btn-login', true);
+    setLoading('btn-login', true, 'Dang nhap');
     try {
         let res = await fetch(BASE + '/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password, rememberMe: document.getElementById('remember-me').checked })
+            body: JSON.stringify({
+                username,
+                password,
+                accountType,
+                rememberMe: document.getElementById('remember-me').checked
+            })
         });
         let data = await res.json();
         if (!res.ok) {
@@ -216,30 +250,18 @@ document.getElementById('form-login').addEventListener('submit', async function 
         }
 
         let token = data.token || data.accessToken || '';
+        let roleName = data.role || accountType;
         localStorage.setItem('token', token);
-        localStorage.setItem('username', username);
+        localStorage.setItem('username', data.username || username);
+        localStorage.setItem('userId', data.userId || '');
+        localStorage.setItem('role', roleName);
 
-        let redirectUrl = '/home/';
-        try {
-            let meRes = await fetch(BASE + '/auth/me', {
-                headers: { 'Authorization': 'Bearer ' + token }
-            });
-            if (meRes.ok) {
-                let me = await meRes.json();
-                localStorage.setItem('userId', me._id);
-                localStorage.setItem('username', me.username);
-                localStorage.setItem('role', me.role?.name || '');
-                if (me.role?.name === 'ADMIN') {
-                    redirectUrl = '/admin/';
-                }
-            }
-        } catch {}
-
+        let redirectUrl = await hydrateLoggedInUser(token, roleName);
         window.location.replace(redirectUrl);
     } catch {
         showAlert('Loi ket noi server. Hay chac chan server dang chay.');
     } finally {
-        setLoading('btn-login', false, 'Đăng nhập');
+        setLoading('btn-login', false, 'Dang nhap');
     }
 });
 
@@ -251,9 +273,7 @@ document.getElementById('form-register').addEventListener('submit', async functi
     let email = document.getElementById('reg-email').value.trim();
     let fullName = document.getElementById('reg-fullname').value.trim();
     let password = document.getElementById('reg-password').value;
-    let role = document.getElementById('reg-role').value.trim();
-
-    if (!username || !email || !password || !role) {
+    if (!username || !email || !password) {
         showAlert('Vui long dien day du cac truong bat buoc.');
         return;
     }
@@ -262,12 +282,12 @@ document.getElementById('form-register').addEventListener('submit', async functi
         return;
     }
 
-    setLoading('btn-register', true);
+    setLoading('btn-register', true, 'Tao tai khoan');
     try {
         let res = await fetch(BASE + '/auth/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, email, fullName, password, role })
+            body: JSON.stringify({ username, email, fullName, password })
         });
         let data = await res.json();
         if (!res.ok) {
@@ -283,11 +303,12 @@ document.getElementById('form-register').addEventListener('submit', async functi
         setTimeout(function () {
             switchTab('login');
             document.getElementById('login-username').value = username;
+            document.getElementById('login-account-type').value = 'USER';
         }, 900);
     } catch {
         showAlert('Loi ket noi server. Hay chac chan server dang chay.');
     } finally {
-        setLoading('btn-register', false, 'Tạo tài khoản');
+        setLoading('btn-register', false, 'Tao tai khoan');
     }
 });
 </script>

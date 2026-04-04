@@ -5,6 +5,10 @@ module.exports = {
         return await roleModel.find({ isDeleted: false });
     },
 
+    getByName: async function (name) {
+        return await roleModel.findOne({ name: String(name || '').toUpperCase(), isDeleted: false });
+    },
+
     getById: async function (id) {
         return await roleModel.findOne({ _id: id, isDeleted: false });
     },

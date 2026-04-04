@@ -13,7 +13,8 @@ module.exports = {
     },
 
     getByUsername: async function (username) {
-        return await userModel.findOne({ username: username, isDeleted: false });
+        return await userModel.findOne({ username: username, isDeleted: false })
+            .populate({ path: 'role', select: 'name' });
     },
 
     create: async function (data) {
