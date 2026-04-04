@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yêu thích – ShopVN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+
+<div data-include="/layout/header.html"></div>
+
+<div class="container py-4">
+    <h4 class="fw-bold mb-4">❤️ Sản phẩm yêu thích</h4>
+    <div id="wishlist-content">
+        <div class="row g-3" id="skeleton-grid">
+            ${[1,2,3,4].map(() => `
+            <div class="col-6 col-md-3">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;overflow:hidden;">
+                    <div class="skeleton-box" style="height:200px;border-radius:0;"></div>
+                    <div class="p-3">
+                        <div class="skeleton-box mb-2" style="height:15px;width:75%;"></div>
+                        <div class="skeleton-box mb-3" style="height:12px;width:45%;"></div>
+                        <div class="skeleton-box" style="height:36px;"></div>
+                    </div>
+                </div>
+            </div>`).join('')}
+        </div>
+        <div class="row g-3" id="wishlist-grid" style="display:none;"></div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast-msg" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="toast-text"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<div data-include="/layout/footer.html"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/v1';
+
+function fmt(n) { return Number(n).toLocaleString('vi-VN') + ' đ'; }
+function showToast(msg, type) {
+    let el = document.getElementById('toast-msg');
+    el.className = 'toast align-items-center border-0 text-bg-' + (type || 'success');
+    document.getElementById('toast-text').textContent = msg;
+    bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 }).show();
+}
+
+async function loadWishlist() {
+    let token = localStorage.getItem('token');
+    document.getElementById('skeleton-grid').style.display = '';
+    document.getElementById('wishlist-grid').style.display = 'none';
+
+    if (!token) {
+        document.getElementById('wishlist-content').innerHTML = `
+            <div class="state-card">
+                <div class="icon">🔒</div>
+                <h4>Bạn chưa đăng nhập</h4>
+                <p>Đăng nhập để xem danh sách yêu thích.</p>
+                <a href="/auth/" class="btn btn-primary px-4" style="border-radius:10px;">Đăng nhập</a>
+            </div>`;
+        return;
+    }
+
+    try {
+        let res = await fetch(BASE + '/wishlists', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+
+        document.getElementById('skeleton-grid').style.display = 'none';
+        document.getElementById('wishlist-grid').style.display = '';
+
+        if (!res.ok) throw new Error();
+
+        let raw = await res.json();
+        let items = Array.isArray(raw) ? raw : (raw.items || []);
+
+        if (!items.length) {
+            document.getElementById('wishlist-grid').innerHTML = `
+                <div class="col-12">
+                    <div class="state-card">
+                        <div class="icon">💔</div>
+                        <h4>Chưa có sản phẩm yêu thích</h4>
+                        <p>Khám phá và thêm sản phẩm bạn thích!</p>
+                        <a href="/products/" class="btn btn-primary px-4" style="border-radius:10px;">Xem sản phẩm →</a>
+                    </div>
+                </div>`;
+            return;
+        }
+
+        // Fetch product info for each item
+        let grid = document.getElementById('wishlist-grid');
+        grid.innerHTML = '';
+
+        await Promise.all(items.map(async item => {
+            let productId = typeof item.product === 'object' ? item.product._id : item.product;
+            try {
+                let pr = await fetch(BASE + '/products/' + productId);
+                if (!pr.ok) return;
+                let p = await pr.json();
+                let col = createCard(p);
+                grid.appendChild(col);
+            } catch {}
+        }));
+
+        if (!grid.children.length) {
+            grid.innerHTML = '<div class="col-12 text-center py-5 text-muted"><p>Không thể tải sản phẩm.</p></div>';
+        }
+    } catch {
+        document.getElementById('skeleton-grid').style.display = 'none';
+        document.getElementById('wishlist-grid').style.display = '';
+        document.getElementById('wishlist-grid').innerHTML =
+            '<div class="col-12"><div class="state-card"><div class="icon">⚠️</div><p>Lỗi kết nối server.</p></div></div>';
+    }
+}
+
+function createCard(p) {
+    let col = document.createElement('div');
+    col.className = 'col-6 col-md-3';
+    let hasImg = p.images && p.images.length > 0 && !p.images[0].includes('example.com');
+
+    col.innerHTML = `
+        <div class="card product-card shadow-sm">
+            <div class="product-img-wrap">
+                ${hasImg ? `<img src="${p.images[0]}" alt="${p.title}">` : '<div class="no-img">👕</div>'}
+            </div>
+            <div class="card-body">
+                <a href="/products/detail/?id=${p._id}" class="product-title text-decoration-none text-dark">${p.title}</a>
+                <div class="price-tag mt-1">${fmt(p.price || 0)}</div>
+                <div class="d-flex gap-2 mt-2">
+                    <button class="btn btn-dark btn-sm flex-fill" style="border-radius:8px;font-size:.82rem;"
+                            data-id="${p._id}" data-name="${p.title}" onclick="addToCart(this)">
+                        🛒 Giỏ hàng
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" style="border-radius:8px;"
+                            data-id="${p._id}" onclick="removeWishlist(this)" title="Bỏ yêu thích">
+                        🗑
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+    let img = col.querySelector('img');
+    if (img) img.addEventListener('error', function () {
+        this.parentNode.innerHTML = '<div class="no-img">👕</div>';
+    });
+
+    return col;
+}
+
+async function removeWishlist(btn) {
+    let id = btn.dataset.id;
+    let token = localStorage.getItem('token');
+    try {
+        let res = await fetch(BASE + '/wishlists/remove-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ product: id })
+        });
+        if (res.ok) {
+            showToast('Đã xóa khỏi yêu thích', 'secondary');
+            btn.closest('.col-6, .col-md-3').remove();
+            let grid = document.getElementById('wishlist-grid');
+            if (!grid.children.length) {
+                grid.innerHTML = `<div class="col-12"><div class="state-card">
+                    <div class="icon">💔</div><h4>Chưa có sản phẩm yêu thích</h4>
+                    <a href="/products/" class="btn btn-primary px-4" style="border-radius:10px;">Xem sản phẩm →</a>
+                </div></div>`;
+            }
+        }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+}
+
+async function addToCart(btn) {
+    let id = btn.dataset.id, name = btn.dataset.name;
+    let token = localStorage.getItem('token');
+    if (!token) {
+        showToast('Vui lòng đăng nhập!', 'warning');
+        setTimeout(() => window.location.href = '/auth/', 1200);
+        return;
+    }
+    btn.disabled = true;
+    try {
+        let res = await fetch(BASE + '/carts/add-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ product: id, quantity: 1 })
+        });
+        if (res.ok) showToast('Đã thêm vào giỏ! 🎉', 'success');
+        else { let d = await res.json(); showToast(d.message || 'Thất bại', 'danger'); }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+    finally { btn.disabled = false; }
+}
+
+loadWishlist();
+</script>
+</body>
+</html>
