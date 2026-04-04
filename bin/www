@@ -77,10 +77,15 @@ io.on('connection', function (socket) {
         }
     });
 
-    socket.on('send-message', async function (data) {
+    // callback la ack de client biet server da nhan va luu tin nhan
+    socket.on('send-message', async function (data, callback) {
         try {
             let content = data && data.content ? data.content.trim() : '';
+            let clientMessageId = data && data.clientMessageId ? data.clientMessageId.trim() : '';
             if (!content) {
+                if (typeof callback === 'function') {
+                    callback({ ok: false, message: 'Noi dung khong duoc de trong' });
+                }
                 return socket.emit('error-message', { message: 'Noi dung khong duoc de trong' });
             }
 
@@ -91,55 +96,84 @@ io.on('connection', function (socket) {
             } else if (socket.roleName === 'ADMIN') {
                 targetUserId = data.userId;
                 if (!targetUserId) {
+                    if (typeof callback === 'function') {
+                        callback({ ok: false, message: 'Admin phai gui kem userId' });
+                    }
                     return socket.emit('error-message', { message: 'Admin phai gui kem userId' });
                 }
             } else {
+                if (typeof callback === 'function') {
+                    callback({ ok: false, message: 'Role khong hop le' });
+                }
                 return socket.emit('error-message', { message: 'Role khong hop le' });
             }
 
-            let newMessage = await chatsService.createMessage(
+            let result = await chatsService.createMessage(
                 targetUserId,
                 socket.userId,
                 socket.roleName,
-                content
+                content,
+                clientMessageId
             );
 
-            let senderUser = await userModel.findById(socket.userId);
-
-            if (socket.roleName === 'USER') {
-                let users = await userModel.find({ isDeleted: false }).populate('role');
-
-                let adminUsers = users.filter(function (item) {
-                    return item.role && item.role.name === 'ADMIN';
-                });
-
-                for (let admin of adminUsers) {
-                    await notificationsService.create({
-                        user: admin._id,
-                        title: 'Tin nhan moi',
-                        content: (senderUser ? senderUser.username : 'User') + ' vua gui tin nhan',
-                        type: 'CHAT',
-                        link: '/admin-chat.html'
-                    });
-                }
-            } else if (socket.roleName === 'ADMIN') {
-                await notificationsService.create({
-                    user: targetUserId,
-                    title: 'Admin da tra loi',
-                    content: (senderUser ? senderUser.username : 'Admin') + ' vua tra loi tin nhan cua ban',
-                    type: 'CHAT',
-                    link: '/user-chat.html'
-                });
-            }
+            let newMessage = result.message;
 
             await newMessage.populate({
                 path: 'sender',
                 select: 'username fullName role'
             });
 
-            let roomName = 'user_' + targetUserId;
-            io.to(roomName).emit('new-message', newMessage);
+            if (result.created) {
+                let roomName = 'user_' + targetUserId;
+                io.to(roomName).emit('new-message', newMessage);
+            }
+
+            if (typeof callback === 'function') {
+                callback({
+                    ok: true,
+                    messageId: newMessage._id,
+                    clientMessageId: newMessage.clientMessageId || clientMessageId,
+                    created: result.created
+                });
+            }
+
+            if (result.created) {
+                Promise.resolve().then(async function () {
+                    let senderUser = await userModel.findById(socket.userId).select('username fullName');
+
+                    if (socket.roleName === 'USER') {
+                        let users = await userModel.find({ isDeleted: false }).populate('role');
+
+                        let adminUsers = users.filter(function (item) {
+                            return item.role && item.role.name === 'ADMIN';
+                        });
+
+                        for (let admin of adminUsers) {
+                            await notificationsService.create({
+                                user: admin._id,
+                                title: 'Tin nhan moi',
+                                content: (senderUser ? (senderUser.fullName || senderUser.username) : 'User') + ' vua gui tin nhan',
+                                type: 'CHAT',
+                                link: '/admin/'
+                            });
+                        }
+                    } else if (socket.roleName === 'ADMIN') {
+                        await notificationsService.create({
+                            user: targetUserId,
+                            title: 'Admin da tra loi',
+                            content: (senderUser ? (senderUser.fullName || senderUser.username) : 'Admin') + ' vua tra loi tin nhan cua ban',
+                            type: 'CHAT',
+                            link: '/chat/'
+                        });
+                    }
+                }).catch(function (err) {
+                    console.error('Tao notification chat that bai:', err.message);
+                });
+            }
         } catch (err) {
+            if (typeof callback === 'function') {
+                callback({ ok: false, message: err.message });
+            }
             socket.emit('error-message', { message: err.message });
         }
     });

@@ -11,40 +11,48 @@
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item" id="nav-home-item">
-                    <a class="nav-link" href="/" data-nav="/">Trang chủ</a>
+                    <a class="nav-link" href="/" data-nav="/">Trang chu</a>
                 </li>
                 <li class="nav-item" id="nav-products-item">
-                    <a class="nav-link" href="/products/" data-nav="/products/">Sản phẩm</a>
+                    <a class="nav-link" href="/products/" data-nav="/products/">San pham</a>
                 </li>
                 <li class="nav-item" id="nav-cart-item">
-                    <a class="nav-link" href="/carts/" data-nav="/carts/">Giỏ hàng</a>
+                    <a class="nav-link" href="/carts/" data-nav="/carts/">Gio hang</a>
+                </li>
+                <li class="nav-item" id="nav-chat-item" style="display:none;">
+                    <a class="nav-link" href="/chat/" data-nav="/chat/">Chat</a>
+                </li>
+                <li class="nav-item" id="nav-notifications-item" style="display:none;">
+                    <a class="nav-link" href="/notifications/" data-nav="/notifications/">Thong bao</a>
                 </li>
                 <li class="nav-item" id="nav-wishlist-item" style="display:none;">
-                    <a class="nav-link" href="/wishlist/" data-nav="/wishlist/">Yêu thích</a>
+                    <a class="nav-link" href="/wishlist/" data-nav="/wishlist/">Yeu thich</a>
                 </li>
             </ul>
 
             <div id="nav-guest" class="d-flex gap-2">
-                <a href="/auth/" class="btn btn-outline-light btn-sm">Đăng nhập</a>
-                <a href="/auth/#register" class="btn btn-warning btn-sm text-dark fw-semibold">Đăng ký</a>
+                <a href="/auth/" class="btn btn-outline-light btn-sm">Dang nhap</a>
+                <a href="/auth/#register" class="btn btn-warning btn-sm text-dark fw-semibold">Dang ky</a>
             </div>
 
             <div id="nav-user" class="d-none d-flex align-items-center gap-2">
                 <div class="dropdown">
                     <button class="btn btn-outline-light btn-sm dropdown-toggle d-flex align-items-center gap-2"
                             type="button" data-bs-toggle="dropdown">
-                        <span id="nav-username">Tài khoản</span>
+                        <span id="nav-username">Tai khoan</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end">
-                        <li id="nav-profile-item"><a class="dropdown-item" href="/profile/">Tài khoản</a></li>
-                        <li id="nav-orders-item"><a class="dropdown-item" href="/orders/">Đơn hàng</a></li>
-                        <li id="nav-wishlist-dropdown-item"><a class="dropdown-item" href="/wishlist/">Yêu thích</a></li>
+                        <li id="nav-profile-item"><a class="dropdown-item" href="/profile/">Tai khoan</a></li>
+                        <li id="nav-orders-item"><a class="dropdown-item" href="/orders/">Don hang</a></li>
+                        <li id="nav-chat-dropdown-item"><a class="dropdown-item" href="/chat/">Chat</a></li>
+                        <li id="nav-notifications-dropdown-item"><a class="dropdown-item" href="/notifications/">Thong bao</a></li>
+                        <li id="nav-wishlist-dropdown-item"><a class="dropdown-item" href="/wishlist/">Yeu thich</a></li>
                         <li id="nav-admin-link" style="display:none;"><hr class="dropdown-divider"></li>
                         <li id="nav-admin-item" style="display:none;">
-                            <a class="dropdown-item text-danger" href="/admin/">Quản trị</a>
+                            <a class="dropdown-item text-danger" href="/admin/">Quan tri</a>
                         </li>
                         <li><hr class="dropdown-divider"></li>
-                        <li><button class="dropdown-item text-danger" id="btn-logout">Đăng xuất</button></li>
+                        <li><button class="dropdown-item text-danger" id="btn-logout">Dang xuat</button></li>
                     </ul>
                 </div>
             </div>

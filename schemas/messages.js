@@ -21,7 +21,21 @@ let messageSchema = mongoose.Schema({
         required: true,
         trim: true
     },
+    clientMessageId: {
+        type: String,
+        default: null
+    },
     isRead: { type: Boolean, default: false }
 }, { timestamps: true });
+
+messageSchema.index(
+    { room: 1, clientMessageId: 1 },
+    {
+        unique: true,
+        partialFilterExpression: {
+            clientMessageId: { $type: 'string' }
+        }
+    }
+);
 
 module.exports = mongoose.model('message', messageSchema);

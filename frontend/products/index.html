@@ -25,7 +25,7 @@
                        placeholder="Tên sản phẩm...">
 
                 <h6>📂 Danh mục</h6>
-                <div class="d-flex flex-wrap gap-2 mb-4">
+                <div class="d-flex flex-wrap gap-2 mb-4" id="categories-pills">
                     <span class="cat-pill active" data-cat="">Tất cả</span>
                     <span class="cat-pill" data-cat="áo">Áo</span>
                     <span class="cat-pill" data-cat="quần">Quần</span>
@@ -243,6 +243,31 @@ async function loadAllProducts() {
     }
 }
 
+async function loadCategoriesPills() {
+    try {
+        let res = await fetch(BASE + '/categories');
+        let data = await res.json();
+        let list = Array.isArray(data) ? data : [];
+        let wrap = document.getElementById('categories-pills');
+        if (!wrap) return;
+        wrap.innerHTML = '<span class="cat-pill active" data-cat="">Tat ca</span>'
+            + list.map(function (item) {
+                return `<span class="cat-pill" data-cat="${item.name || ''}">${item.name || ''}</span>`;
+            }).join('');
+        bindCategoryPills();
+    } catch {}
+}
+
+function bindCategoryPills() {
+    document.querySelectorAll('.cat-pill').forEach(function (pill) {
+        pill.addEventListener('click', function () {
+            document.querySelectorAll('.cat-pill').forEach(function (p) { p.classList.remove('active'); });
+            this.classList.add('active');
+            applyFilters();
+        });
+    });
+}
+
 /* ── Apply filters ── */
 function applyFilters() {
     let q = (document.getElementById('search-input')?.value || document.getElementById('search-mobile')?.value || '').trim().toLowerCase();
@@ -281,13 +306,7 @@ function resetFilters() {
 }
 
 /* ── Category pills ── */
-document.querySelectorAll('.cat-pill').forEach(pill => {
-    pill.addEventListener('click', function () {
-        document.querySelectorAll('.cat-pill').forEach(p => p.classList.remove('active'));
-        this.classList.add('active');
-        applyFilters();
-    });
-});
+bindCategoryPills();
 
 /* ── Search on Enter ── */
 ['search-input', 'search-mobile'].forEach(id => {
@@ -322,6 +341,7 @@ async function addToCart(e) {
     finally { btn.disabled = false; btn.innerHTML = '🛒 Thêm vào giỏ'; }
 }
 
+loadCategoriesPills();
 loadAllProducts();
 </script>
 </body>

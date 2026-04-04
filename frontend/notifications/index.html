@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thong bao - ShopVN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+<div data-include="/layout/header.html"></div>
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold mb-1">Thong bao</h4>
+            <div class="text-muted">Danh sach thong bao cua ban</div>
+        </div>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="loadNotifications()">Tai lai</button>
+            <button class="btn btn-primary" onclick="markAllNotifications()">Danh dau da doc tat ca</button>
+        </div>
+    </div>
+
+    <div id="state-box"></div>
+    <div id="notifications-list" class="d-grid gap-3"></div>
+</div>
+
+<div data-include="/layout/footer.html"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/v1';
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function headers() {
+    return { Authorization: 'Bearer ' + localStorage.getItem('token') };
+}
+
+function renderState(html) {
+    document.getElementById('state-box').innerHTML = html;
+}
+
+function renderNotification(item) {
+    let badge = item.isRead ? '<span class="badge bg-secondary">Da doc</span>' : '<span class="badge bg-primary">Moi</span>';
+    let action = item.isRead ? '' : '<button class="btn btn-sm btn-primary" onclick="markNotificationRead(\'' + item._id + '\')">Danh dau da doc</button>';
+    let link = item.link ? '<a class="btn btn-sm btn-outline-primary" href="' + item.link + '">Mo</a>' : '';
+    return '<div class="border rounded-3 p-3 ' + (item.isRead ? '' : 'border-primary-subtle') + '">'
+        + '<div class="d-flex justify-content-between align-items-start gap-3">'
+        + '<div>'
+        + '<div class="fw-semibold">' + escapeHtml(item.title || '') + '</div>'
+        + '<div class="text-muted small">' + escapeHtml(item.content || '') + '</div>'
+        + '<div class="small text-muted mt-2">' + escapeHtml(item.type || 'SYSTEM') + ' • ' + new Date(item.createdAt).toLocaleString('vi-VN') + '</div>'
+        + '</div>'
+        + badge
+        + '</div>'
+        + '<div class="d-flex gap-2 mt-3">' + action + link + '</div>'
+        + '</div>';
+}
+
+async function loadNotifications() {
+    let token = localStorage.getItem('token');
+    let role = localStorage.getItem('role');
+
+    if (!token) {
+        renderState('<div class="alert alert-warning">Ban chua dang nhap.</div>');
+        document.getElementById('notifications-list').innerHTML = '';
+        return;
+    }
+
+    if (role === 'ADMIN') {
+        renderState('<div class="alert alert-warning">Admin xem thong bao trong trang /admin/.</div>');
+        document.getElementById('notifications-list').innerHTML = '';
+        return;
+    }
+
+    try {
+        renderState('');
+        let response = await fetch(BASE + '/notifications', { headers: headers() });
+        let data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Khong the tai thong bao');
+        document.getElementById('notifications-list').innerHTML = data.map(renderNotification).join('') || '<div class="text-muted">Chua co thong bao nao.</div>';
+    } catch (err) {
+        renderState('<div class="alert alert-danger">' + escapeHtml(err.message) + '</div>');
+        document.getElementById('notifications-list').innerHTML = '';
+    }
+}
+
+async function markNotificationRead(id) {
+    try {
+        let response = await fetch(BASE + '/notifications/' + id + '/read', {
+            method: 'PATCH',
+            headers: headers()
+        });
+        let data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Cap nhat that bai');
+        loadNotifications();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+async function markAllNotifications() {
+    try {
+        let response = await fetch(BASE + '/notifications/read-all', {
+            method: 'PATCH',
+            headers: headers()
+        });
+        let data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Cap nhat that bai');
+        loadNotifications();
+    } catch (err) {
+        alert(err.message);
+    }
+}
+
+loadNotifications();
+</script>
+</body>
+</html>
