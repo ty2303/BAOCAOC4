@@ -64,8 +64,12 @@ function initAuthHeader() {
     let homeItem = document.getElementById('nav-home-item');
     let productsItem = document.getElementById('nav-products-item');
     let cartItem = document.getElementById('nav-cart-item');
+    let chatItem = document.getElementById('nav-chat-item');
+    let notificationsItem = document.getElementById('nav-notifications-item');
     let profileItem = document.getElementById('nav-profile-item');
     let ordersItem = document.getElementById('nav-orders-item');
+    let chatDropdownItem = document.getElementById('nav-chat-dropdown-item');
+    let notificationsDropdownItem = document.getElementById('nav-notifications-dropdown-item');
     let wishlistDropdownItem = document.getElementById('nav-wishlist-dropdown-item');
 
     if (!guestEl || !userEl) return;
@@ -80,9 +84,13 @@ function initAuthHeader() {
             if (homeItem) homeItem.style.display = 'none';
             if (productsItem) productsItem.style.display = 'none';
             if (cartItem) cartItem.style.display = 'none';
+            if (chatItem) chatItem.style.display = 'none';
+            if (notificationsItem) notificationsItem.style.display = 'none';
             if (wishlistItem) wishlistItem.style.display = 'none';
             if (profileItem) profileItem.style.display = 'none';
             if (ordersItem) ordersItem.style.display = 'none';
+            if (chatDropdownItem) chatDropdownItem.style.display = 'none';
+            if (notificationsDropdownItem) notificationsDropdownItem.style.display = 'none';
             if (wishlistDropdownItem) wishlistDropdownItem.style.display = 'none';
             if (adminLink) adminLink.style.display = '';
             if (adminItem) adminItem.style.display = '';
@@ -91,9 +99,13 @@ function initAuthHeader() {
             if (homeItem) homeItem.style.display = '';
             if (productsItem) productsItem.style.display = '';
             if (cartItem) cartItem.style.display = '';
+            if (chatItem) chatItem.style.display = '';
+            if (notificationsItem) notificationsItem.style.display = '';
             if (wishlistItem) wishlistItem.style.display = '';
             if (profileItem) profileItem.style.display = '';
             if (ordersItem) ordersItem.style.display = '';
+            if (chatDropdownItem) chatDropdownItem.style.display = '';
+            if (notificationsDropdownItem) notificationsDropdownItem.style.display = '';
             if (wishlistDropdownItem) wishlistDropdownItem.style.display = '';
             if (adminLink) adminLink.style.display = 'none';
             if (adminItem) adminItem.style.display = 'none';
@@ -102,6 +114,7 @@ function initAuthHeader() {
         guestEl.classList.remove('d-none');
         userEl.classList.add('d-none');
         if (wishlistItem) wishlistItem.style.display = 'none';
+        if (notificationsItem) notificationsItem.style.display = 'none';
     }
 
     let logoutBtn = document.getElementById('btn-logout');
