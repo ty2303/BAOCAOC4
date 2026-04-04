@@ -29,8 +29,12 @@ module.exports = {
             let isMatch = usersService.checkPassword(req.body.password, user.password);
             if (!isMatch) return res.status(404).send({ message: "Sai tài khoản hoặc mật khẩu" });
 
-            let token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn: '1h' });
-            res.cookie('token', token, { maxAge: 60 * 60 * 1000, httpOnly: true });
+            let rememberMe = req.body.rememberMe === true || req.body.rememberMe === 'true';
+            let expiresIn = rememberMe ? '30d' : '1d';
+            let maxAge = rememberMe ? 30 * 24 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
+
+            let token = jwt.sign({ id: user._id }, JWT_SECRET, { expiresIn });
+            res.cookie('token', token, { maxAge, httpOnly: true });
             res.send({ token });
         } catch (err) {
             res.status(400).send({ message: err.message });

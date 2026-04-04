@@ -1,6 +1,15 @@
 let notificationsService = require('../services/notifications.service');
 
 module.exports = {
+    getUnreadCount: async function (req, res) {
+        try {
+            let result = await notificationsService.countUnread(req.userId);
+            res.send({ unreadCount: result });
+        } catch (err) {
+            res.status(400).send({ message: err.message });
+        }
+    },
+
     getMyNotifications: async function (req, res) {
         try {
             let result = await notificationsService.getMyNotifications(req.userId);

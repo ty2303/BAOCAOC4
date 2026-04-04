@@ -119,8 +119,14 @@ function connectSocket() {
         }
     });
 
+    let isFirstConnect = true;
     socket.on('connect', function () {
-        console.log('Da ket noi socket');
+        if (isFirstConnect) {
+            isFirstConnect = false;
+            return;
+        }
+        // Reconnect: tải lại lịch sử để lấy các tin nhắn đã bị bỏ lỡ
+        loadHistory().catch(function () {});
     });
 
     socket.on('connect_error', function (err) {

@@ -7,7 +7,7 @@ let { checkLogin, checkRole } = require('../utils/authHandler');
 router.get('/', checkLogin, checkRole(['ADMIN']), usersController.getAll);
 router.get('/:id', checkLogin, usersController.getById);
 router.post('/', usersController.create);
-router.put('/:id', checkLogin, usersController.update);
-router.delete('/:id', checkLogin, usersController.remove);
+router.put('/:id', checkLogin, checkRole(['ADMIN', 'USER']), usersController.update);
+router.delete('/:id', checkLogin, checkRole(['ADMIN']), usersController.remove);
 
 module.exports = router;

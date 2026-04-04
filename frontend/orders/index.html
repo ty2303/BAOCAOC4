@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đơn hàng của tôi - ShopVN</title>
+    <title>Lịch sử đơn hàng - ShopVN</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/layout/styles.css">
     <script src="/layout/load-layout.js" defer></script>
@@ -13,7 +13,7 @@
 <div data-include="/layout/header.html"></div>
 
 <div class="container py-4">
-    <h4 class="fw-bold mb-4">Đơn hàng của tôi</h4>
+    <h4 class="fw-bold mb-4">Lịch sử đơn hàng</h4>
     <div id="orders-content">
         <div class="skeleton-box mb-3" style="height:110px;border-radius:14px;"></div>
         <div class="skeleton-box mb-3" style="height:110px;border-radius:14px;"></div>
@@ -132,7 +132,8 @@ function renderOrders(orders) {
         let refundTx = group.refundTransaction;
         let orderStatus = order.status || 'pending';
         let paymentStatus = paymentTx?.status || 'pending';
-        let canRefund = ['pending', 'processing'].includes(orderStatus) && !refundTx;
+        let canCancel = orderStatus === 'pending' && !refundTx;
+        let canRefund = orderStatus === 'processing' && !refundTx;
         let itemCount = Array.isArray(order.items) ? order.items.length : 0;
 
         return `
@@ -158,11 +159,18 @@ function renderOrders(orders) {
                         </div>
                     </div>
 
-                    ${canRefund ? `
+                    ${canCancel ? `
                         <div class="mt-3">
                             <button class="btn btn-sm btn-outline-danger" style="border-radius:8px;"
-                                onclick="refundOrder('${group.orderId}')">
+                                onclick="cancelOrder('${group.orderId}')">
                                 Hủy đơn hàng
+                            </button>
+                        </div>
+                    ` : canRefund ? `
+                        <div class="mt-3">
+                            <button class="btn btn-sm btn-outline-warning" style="border-radius:8px;"
+                                onclick="refundOrder('${group.orderId}')">
+                                Yêu cầu hoàn tiền
                             </button>
                         </div>
                     ` : ''}
@@ -204,8 +212,32 @@ async function loadOrders() {
     }
 }
 
-async function refundOrder(orderId) {
+async function cancelOrder(orderId) {
     if (!confirm('Bạn có chắc muốn hủy đơn hàng này?')) return;
+
+    let token = localStorage.getItem('token');
+
+    try {
+        let res = await fetch(BASE + '/payments/' + orderId + '/cancel', {
+            method: 'PUT',
+            headers: { Authorization: 'Bearer ' + token }
+        });
+
+        let data = await res.json();
+        if (!res.ok) {
+            showToast(data.message || 'Hủy đơn thất bại', 'danger');
+            return;
+        }
+
+        showToast('Đã hủy đơn hàng thành công', 'success');
+        loadOrders();
+    } catch (err) {
+        showToast('Lỗi kết nối server', 'danger');
+    }
+}
+
+async function refundOrder(orderId) {
+    if (!confirm('Bạn có chắc muốn yêu cầu hoàn tiền cho đơn hàng này?')) return;
 
     let token = localStorage.getItem('token');
 
@@ -217,11 +249,11 @@ async function refundOrder(orderId) {
 
         let data = await res.json();
         if (!res.ok) {
-            showToast(data.message || 'Hủy đơn thất bại', 'danger');
+            showToast(data.message || 'Yêu cầu hoàn tiền thất bại', 'danger');
             return;
         }
 
-        showToast('Đã hủy đơn hàng', 'success');
+        showToast('Đã tạo yêu cầu hoàn tiền', 'success');
         loadOrders();
     } catch (err) {
         showToast('Lỗi kết nối server', 'danger');

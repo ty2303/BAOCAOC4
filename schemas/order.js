@@ -21,9 +21,23 @@ let OrderSchema = new Schema({
             default: 0
         }
     }],
+    subtotalAmount: {
+        type: Number,
+        default: 0
+    },
+    discountAmount: {
+        type: Number,
+        default: 0
+    },
     totalAmount: {
         type: Number,
         default: 0
+    },
+    couponCode: {
+        type: String,
+        default: '',
+        trim: true,
+        uppercase: true
     },
     status: {
         type: String,
@@ -45,6 +59,5 @@ let OrderSchema = new Schema({
     },
 
 }, { timestamps: true });
-
 
 module.exports = mongoose.model('order', OrderSchema);

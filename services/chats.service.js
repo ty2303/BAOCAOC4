@@ -65,7 +65,9 @@ module.exports = {
 
         room.lastMessage = content;
         room.lastSenderType = senderType;
-        await room.save();
+        room.save().catch(function (err) {
+            console.error('room.save that bai:', err.message);
+        });
 
         return {
             message: newMessage,

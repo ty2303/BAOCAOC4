@@ -38,6 +38,7 @@ module.exports = {
             let user = await userModel.findById(req.userId).populate('role');
             if (!user) return res.status(403).send({ message: "Không tìm thấy user" });
 
+            req.roleName = user.role.name;
             if (!allowedRoles.includes(user.role.name)) {
                 return res.status(403).send({ message: "Bạn không có quyền truy cập" });
             }

@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const orderModel = require("../schemas/order");
 const transactionModel = require("../schemas/transactions");
 const inventoryModel = require("../schemas/inventories");
+const couponModel = require("../schemas/coupons");
 
 // LOCK / UNLOCK flow:
 // - Đặt hàng: stock -= qty, reserved += qty (LOCK)
@@ -132,6 +133,15 @@ module.exports = {
 
 			transaction.status = "failed";
 			await transaction.save({ session });
+
+			// Hoàn lại slot coupon nếu đơn có dùng coupon
+			if (order.couponCode) {
+				await couponModel.findOneAndUpdate(
+					{ code: order.couponCode, usedCount: { $gt: 0 } },
+					{ $inc: { usedCount: -1 } },
+					{ session }
+				);
+			}
 
 			await session.commitTransaction();
 			session.endSession();
