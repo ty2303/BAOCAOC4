@@ -4,7 +4,7 @@ const orderModel = require("../schemas/order");
 const inventoryModel = require("../schemas/inventories");
 
 module.exports = {
-	// lấy lịch sử giao dịch của 1 user
+	// Lấy lịch sử giao dịch của 1 user
 	getByUser: async (userId, query) => {
 		const page = Number(query.page) || 1;
 		const limit = Number(query.limit) || 10;
@@ -25,14 +25,11 @@ module.exports = {
 		return transactions;
 	},
 
-	// lấy giao dịch theo order
-	getByOrder: async (orderId) => {
-		return await transactionModel
-			.find({ orderId: orderId })
-			.sort({ createdAt: -1 });
-	},
+	// Lấy giao dịch theo order
+	getByOrder: async (orderId) =>
+		await transactionModel.find({ orderId: orderId }).sort({ createdAt: -1 }),
 
-	// lấy chi tiết 1 giao dịch
+	// Lấy chi tiết 1 giao dịch
 	getById: async (transactionId) => {
 		const transaction = await transactionModel
 			.findById(transactionId)
@@ -44,7 +41,7 @@ module.exports = {
 		return transaction;
 	},
 
-	// cập nhật trạng thái giao dịch (pending → success/failed)
+	// Cập nhật trạng thái giao dịch (pending → success/failed)
 	updateStatus: async (transactionId, newStatus) => {
 		const transaction = await transactionModel.findById(transactionId);
 		if (!transaction) {
@@ -61,33 +58,43 @@ module.exports = {
 		return result;
 	},
 
-	// tạo hoàn tiền (refund)
+	// Hoàn tiền (refund) — chỉ áp dụng cho order đã thanh toán (processing)
+	// Nếu order chưa thanh toán (pending) → dùng cancelPayment thay vì refund
 	createRefund: async (orderId, userId) => {
 		const session = await mongoose.startSession();
 		session.startTransaction();
 		try {
-			// tìm order (phải đúng user)
 			const order = await orderModel.findOne({ _id: orderId, userId: userId });
 			if (!order) {
 				throw new Error("Không tìm thấy đơn hàng");
 			}
-			// chỉ refund khi pending hoặc processing
-			if (!["pending", "processing"].includes(order.status)) {
+
+			// Chỉ refund khi đã thanh toán (processing)
+			// Nếu pending → dùng cancelPayment
+			if (order.status === "pending") {
+				throw new Error(
+					"Đơn hàng chưa thanh toán. Hãy dùng hủy đơn thay vì hoàn tiền",
+				);
+			}
+			if (order.status !== "processing") {
 				throw new Error(
 					"Đơn hàng không thể hoàn tiền (trạng thái: " + order.status + ")",
 				);
 			}
+
 			const existingRefund = await transactionModel.findOne({
 				orderId: orderId,
 				type: "refund",
 			});
 			if (existingRefund) {
-				throw new Error("Đơn hàng này đã được hoàn tiền");
+				throw new Error("Đơn hàng này đã được hoàn tiền rồi");
 			}
-			// hủy order
+
+			// Hủy order
 			order.status = "cancelled";
 			await order.save({ session });
-			// cộng lại tồn kho
+
+			// Trả hàng về kho: soldCount -= qty, stock += qty
 			for (const item of order.items) {
 				await inventoryModel.findOneAndUpdate(
 					{ product: item.productId },
@@ -95,7 +102,8 @@ module.exports = {
 					{ session },
 				);
 			}
-			// tạo transaction refund
+
+			// Tạo transaction refund
 			const refund = new transactionModel({
 				orderId: orderId,
 				userId: userId,
@@ -105,12 +113,14 @@ module.exports = {
 				paymentMethod: order.paymentMethod,
 			});
 			await refund.save({ session });
-			// cập nhật payment gốc → failed
+
+			// Cập nhật payment gốc → failed
 			await transactionModel.findOneAndUpdate(
 				{ orderId: orderId, type: "payment" },
 				{ status: "failed" },
 				{ session },
 			);
+
 			await session.commitTransaction();
 			session.endSession();
 			return refund;
