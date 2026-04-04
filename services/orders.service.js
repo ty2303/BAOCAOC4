@@ -6,39 +6,49 @@ const inventoryModel = require("../schemas/inventories");
 const addressesService = require("./addresses.service");
 
 module.exports = {
+	// Tạo đơn hàng + LOCK hàng trong kho (chuyển stock → reserved)
+	// Hàng chưa bán, chỉ giữ chỗ. Chờ thanh toán xong mới chuyển sang soldCount.
 	createOrder: async (userId, orderData) => {
 		const session = await mongoose.startSession();
 		session.startTransaction();
 
 		try {
-			// Populate de lay price cua product trong gio hang
+			// Lấy giỏ hàng, populate để lấy price
 			const cart = await cartModel
 				.findOne({ user: userId })
 				.session(session)
 				.populate("items.product");
 
 			if (!cart || cart.items.length === 0) {
-				throw new Error("Gio hang trong");
+				throw new Error("Giỏ hàng trống");
 			}
 
-			// Kiem tra ton kho va tinh tong tien
+			// Kiểm tra tồn kho + tính tổng tiền
 			let totalAmount = 0;
 			const orderItems = [];
 
 			for (const item of cart.items) {
 				if (!item.product) {
-					throw new Error("Khong tim thay san pham trong gio hang");
+					throw new Error("Không tìm thấy sản phẩm trong giỏ hàng");
 				}
 
-				const inventory = await inventoryModel.findOne({
-					product: item.product._id,
-				}).session(session);
+				const inventory = await inventoryModel
+					.findOne({ product: item.product._id })
+					.session(session);
 
 				if (!inventory || inventory.stock < item.quantity) {
-					throw new Error("San pham khong du hang");
+					throw new Error(
+						'Sản phẩm "' +
+							item.product.title +
+							'" không đủ hàng. ' +
+							"Còn lại: " +
+							(inventory ? inventory.stock : 0) +
+							", cần: " +
+							item.quantity,
+					);
 				}
 
-				totalAmount += item.product.price * item.quantity;
+				totalAmount = totalAmount + item.product.price * item.quantity;
 				orderItems.push({
 					productId: item.product._id,
 					quantity: item.quantity,
@@ -46,7 +56,34 @@ module.exports = {
 				});
 			}
 
-			const shippingAddress = await addressesService.getOrderAddressText(userId, orderData);
+			// LOCK hàng (atomic) — chống oversale
+			// Dùng findOneAndUpdate + $gte để kiểm tra + trừ cùng lúc
+			// stock -= qty (trừ khỏi kho), reserved += qty (giữ chỗ)
+			for (const item of orderItems) {
+				const updatedInventory = await inventoryModel.findOneAndUpdate(
+					{
+						product: item.productId,
+						stock: { $gte: item.quantity },
+					},
+					{
+						$inc: {
+							stock: -item.quantity,
+							reserved: +item.quantity,
+						},
+					},
+					{ new: true, session },
+				);
+
+				if (!updatedInventory) {
+					throw new Error("Sản phẩm không đủ hàng (đã có người mua trước)");
+				}
+			}
+
+			// Tạo order
+			const shippingAddress = await addressesService.getOrderAddressText(
+				userId,
+				orderData,
+			);
 
 			const newOrder = new orderModel({
 				userId: userId,
@@ -56,33 +93,9 @@ module.exports = {
 				paymentMethod: orderData.paymentMethod,
 				status: "pending",
 			});
-
 			await newOrder.save({ session });
 
-			// Tru ton kho theo kieu atomic de tranh oversell khi nhieu nguoi mua cung luc
-			// Co the hieu gan giong if-else JS thuong:
-			// if (inventory.stock >= item.quantity) {
-			//     inventory.stock = inventory.stock - item.quantity;
-			//     inventory.soldCount = inventory.soldCount + item.quantity;
-			//     await inventory.save();
-			// } else {
-			//     throw new Error("San pham khong du hang");
-			// }
-			for (const item of orderItems) {
-				const updatedInventory = await inventoryModel.findOneAndUpdate(
-					{
-						product: item.productId,
-						stock: { $gte: item.quantity },
-					},
-					{ $inc: { stock: -item.quantity, soldCount: item.quantity } },
-					{ new: true, session },
-				);
-
-				if (!updatedInventory) {
-					throw new Error("San pham khong du hang");
-				}
-			}
-
+			// Tạo transaction
 			const transaction = new transactionModel({
 				orderId: newOrder._id,
 				userId: userId,
@@ -91,9 +104,9 @@ module.exports = {
 				status: "pending",
 				paymentMethod: orderData.paymentMethod,
 			});
-
 			await transaction.save({ session });
 
+			// Xóa giỏ hàng
 			await cartModel.findOneAndUpdate(
 				{ user: userId },
 				{ $set: { items: [] } },
