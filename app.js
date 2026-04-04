@@ -11,6 +11,15 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
+
+app.get('/', function (req, res) {
+    res.sendFile(path.join(__dirname, 'frontend', 'home', 'index.html'));
+});
+
+app.get('/home', function (req, res) {
+    res.redirect('/');
+});
+
 app.use(express.static(path.join(__dirname, 'frontend')));
 mongoose.connect('mongodb+srv://quangvinh02200_db_user:3rgv230nrZNBudpa@cluster0.tlwmnuk.mongodb.net/BAOCAO?appName=Cluster0');
 mongoose.connection.on('connected', () => {

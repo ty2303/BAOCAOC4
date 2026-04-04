@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trang chủ</title>
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+    <div class="site-shell">
+        <div data-include="/layout/header.html"></div>
+
+        <main class="page-main page-stack">
+            <section class="page-card">
+                <h2 class="page-title">Trang chủ</h2>
+                <p class="page-text">Frontend nhỏ này dùng để test nhanh backend. Bạn chỉ cần mở trang, nhập dữ liệu cơ bản và xem kết quả ngay trên trình duyệt.</p>
+            </section>
+
+            <section class="page-card">
+                <h3 class="section-title">Đi nhanh</h3>
+                <div class="link-grid">
+                    <a class="page-card" href="/products/">Mở trang sản phẩm</a>
+                    <a class="page-card" href="/carts/">Mở trang giỏ hàng</a>
+                </div>
+            </section>
+
+            <section class="page-card">
+                <h3 class="section-title">Cách dùng</h3>
+                <ul class="simple-list">
+                    <li>Chạy server bằng <code>npm start</code>.</li>
+                    <li>Mở trang sản phẩm để gọi <code>/api/v1/products</code>.</li>
+                    <li>Mở trang giỏ hàng và dán token USER để test API giỏ hàng.</li>
+                </ul>
+            </section>
+        </main>
+
+        <div data-include="/layout/footer.html"></div>
+    </div>
+</body>
+</html>

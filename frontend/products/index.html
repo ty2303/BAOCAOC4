@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sản phẩm</title>
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+    <div class="site-shell">
+        <div data-include="/layout/header.html"></div>
+
+        <main class="page-main page-stack">
+            <section class="page-card">
+                <h2 class="page-title">Sản phẩm</h2>
+                <p class="page-text">Trang này gọi <code>/api/v1/products</code> và hiển thị danh sách sản phẩm cùng dữ liệu JSON để dễ test.</p>
+
+                <div class="form-grid two-columns">
+                    <div class="field-group">
+                        <label for="titleInput">Tên sản phẩm</label>
+                        <input id="titleInput" type="text" placeholder="Lọc theo tên nếu cần">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="pageInput">Trang</label>
+                        <input id="pageInput" type="number" min="1" value="1">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="minPriceInput">Giá tối thiểu</label>
+                        <input id="minPriceInput" type="number" min="0" value="0">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="maxPriceInput">Giá tối đa</label>
+                        <input id="maxPriceInput" type="number" min="0" value="1000000000">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="limitInput">Số lượng</label>
+                        <input id="limitInput" type="number" min="1" value="5">
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button id="loadProductsBtn">Tải sản phẩm</button>
+                </div>
+
+                <p class="page-note">Tất cả request đều gọi vào cùng server đang mở trang này.</p>
+                <div id="statusBox" class="status-box">Trạng thái: chưa gọi request</div>
+            </section>
+
+            <section class="page-card">
+                <h3 class="section-title">Kết quả đơn giản</h3>
+                <div id="productsList" class="product-list">
+                    <p class="empty-text">Chưa có dữ liệu sản phẩm.</p>
+                </div>
+            </section>
+
+            <section class="page-card">
+                <h3 class="section-title">Dữ liệu JSON</h3>
+                <pre id="rawResult">[]</pre>
+            </section>
+        </main>
+
+        <div data-include="/layout/footer.html"></div>
+    </div>
+
+    <script>
+        let titleInput = document.getElementById('titleInput');
+        let pageInput = document.getElementById('pageInput');
+        let minPriceInput = document.getElementById('minPriceInput');
+        let maxPriceInput = document.getElementById('maxPriceInput');
+        let limitInput = document.getElementById('limitInput');
+        let statusBox = document.getElementById('statusBox');
+        let productsList = document.getElementById('productsList');
+        let rawResult = document.getElementById('rawResult');
+
+        function setStatus(text, isError) {
+            statusBox.textContent = text;
+            statusBox.classList.toggle('is-error', Boolean(isError));
+        }
+
+        function createQueryString() {
+            let params = new URLSearchParams();
+
+            if (titleInput.value.trim()) {
+                params.set('title', titleInput.value.trim());
+            }
+
+            params.set('page', pageInput.value || '1');
+            params.set('minPrice', minPriceInput.value || '0');
+            params.set('maxPrice', maxPriceInput.value || '1000000000');
+            params.set('limit', limitInput.value || '5');
+
+            return params.toString();
+        }
+
+        function renderProducts(products) {
+            productsList.innerHTML = '';
+
+            if (!Array.isArray(products) || products.length === 0) {
+                productsList.innerHTML = '<p class="empty-text">Không tìm thấy sản phẩm.</p>';
+                return;
+            }
+
+            products.forEach(function (product) {
+                let item = document.createElement('div');
+                item.className = 'product-item';
+
+                item.innerHTML =
+                    '<h3>' + (product.title || 'Không có tên') + '</h3>' +
+                    '<p class="product-meta"><strong>ID:</strong> ' + (product._id || '') + '</p>' +
+                    '<p class="product-meta"><strong>SKU:</strong> ' + (product.sku || '') + '</p>' +
+                    '<p class="product-meta"><strong>Giá:</strong> ' + (product.price || 0) + '</p>' +
+                    '<p class="product-meta"><strong>Danh mục:</strong> ' + (product.category || '') + '</p>' +
+                    '<p class="product-meta"><strong>Mô tả:</strong> ' + (product.description || '') + '</p>';
+
+                productsList.appendChild(item);
+            });
+        }
+
+        async function loadProducts() {
+            let queryString = createQueryString();
+            let response = await fetch('/api/v1/products?' + queryString);
+            let text = await response.text();
+            let data = [];
+
+            if (text) {
+                data = JSON.parse(text);
+            }
+
+            rawResult.textContent = JSON.stringify(data, null, 2);
+            setStatus('Trạng thái: ' + response.status + ' ' + response.statusText, !response.ok);
+            renderProducts(data);
+        }
+
+        document.getElementById('loadProductsBtn').onclick = function () {
+            loadProducts().catch(function (error) {
+                setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
+                rawResult.textContent = error.message;
+                productsList.innerHTML = '<p class="empty-text">Request thất bại.</p>';
+            });
+        };
+
+        loadProducts().catch(function (error) {
+            setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
+            rawResult.textContent = error.message;
+        });
+    </script>
+</body>
+</html>

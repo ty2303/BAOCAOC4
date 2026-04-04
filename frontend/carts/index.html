@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giỏ hàng</title>
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+    <div class="site-shell">
+        <div data-include="/layout/header.html"></div>
+
+        <main class="page-main page-stack">
+            <section class="page-card">
+                <h2 class="page-title">Giỏ hàng</h2>
+                <p class="page-text">Dán token USER vào đây để test các API giỏ hàng được bảo vệ bằng request từ trình duyệt.</p>
+
+                <div class="field-group">
+                    <label for="tokenInput">Token USER</label>
+                    <textarea id="tokenInput" placeholder="Dán token USER vào đây"></textarea>
+                </div>
+
+                <div class="form-grid two-columns">
+                    <div class="field-group">
+                        <label for="productInput">ID sản phẩm</label>
+                        <input id="productInput" type="text" placeholder="Nhập ID sản phẩm">
+                    </div>
+
+                    <div class="field-group">
+                        <label for="quantityInput">Số lượng</label>
+                        <input id="quantityInput" type="number" min="1" value="1">
+                    </div>
+                </div>
+
+                <div class="button-row">
+                    <button id="getCartBtn">Lấy giỏ hàng</button>
+                    <button id="addItemBtn">Thêm sản phẩm</button>
+                    <button id="decreaseItemBtn" class="secondary-button">Giảm số lượng</button>
+                </div>
+
+                <p class="helper-text">API dùng để test: <code>/api/v1/carts</code>, <code>/api/v1/carts/add-items</code>, <code>/api/v1/carts/decrease-items</code>.</p>
+                <div id="cartStatusBox" class="status-box">Trạng thái: chưa gọi request</div>
+            </section>
+
+            <section class="page-card">
+                <h3 class="section-title">Kết quả đơn giản</h3>
+                <div id="cartList" class="cart-list">
+                    <p class="empty-text">Chưa có dữ liệu giỏ hàng.</p>
+                </div>
+            </section>
+
+            <section class="page-card">
+                <h3 class="section-title">Dữ liệu JSON</h3>
+                <pre id="cartRawResult">null</pre>
+            </section>
+        </main>
+
+        <div data-include="/layout/footer.html"></div>
+    </div>
+
+    <script>
+        let tokenInput = document.getElementById('tokenInput');
+        let productInput = document.getElementById('productInput');
+        let quantityInput = document.getElementById('quantityInput');
+        let cartStatusBox = document.getElementById('cartStatusBox');
+        let cartList = document.getElementById('cartList');
+        let cartRawResult = document.getElementById('cartRawResult');
+
+        function setStatus(text, isError) {
+            cartStatusBox.textContent = text;
+            cartStatusBox.classList.toggle('is-error', Boolean(isError));
+        }
+
+        function getToken() {
+            return tokenInput.value.trim();
+        }
+
+        function getPayload() {
+            return {
+                product: productInput.value.trim(),
+                quantity: Number(quantityInput.value || 1)
+            };
+        }
+
+        function renderCart(data) {
+            let items = Array.isArray(data) ? data : data && Array.isArray(data.items) ? data.items : [];
+
+            cartList.innerHTML = '';
+
+            if (items.length === 0) {
+                cartList.innerHTML = '<p class="empty-text">Giỏ hàng đang rỗng.</p>';
+                return;
+            }
+
+            items.forEach(function (item, index) {
+                let box = document.createElement('div');
+                box.className = 'cart-item';
+
+                box.innerHTML =
+                    '<h3>Item ' + (index + 1) + '</h3>' +
+                    '<p class="cart-meta"><strong>Product:</strong> ' + (item.product || '') + '</p>' +
+                    '<p class="cart-meta"><strong>Số lượng:</strong> ' + (item.quantity || 0) + '</p>';
+
+                cartList.appendChild(box);
+            });
+        }
+
+        async function requestCart(url, method, body) {
+            let token = getToken();
+
+            if (!token) {
+                alert('Bạn phải nhập token USER.');
+                return;
+            }
+
+            let options = {
+                method: method,
+                headers: {
+                    Authorization: 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                }
+            };
+
+            if (body) {
+                options.body = JSON.stringify(body);
+            }
+
+            let response = await fetch(url, options);
+            let text = await response.text();
+            let data = null;
+
+            if (text) {
+                data = JSON.parse(text);
+            }
+
+            cartRawResult.textContent = JSON.stringify(data, null, 2);
+            setStatus('Trạng thái: ' + response.status + ' ' + response.statusText, !response.ok);
+            renderCart(data);
+        }
+
+        document.getElementById('getCartBtn').onclick = function () {
+            requestCart('/api/v1/carts', 'GET').catch(function (error) {
+                setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
+                cartRawResult.textContent = error.message;
+            });
+        };
+
+        document.getElementById('addItemBtn').onclick = function () {
+            let payload = getPayload();
+
+            requestCart('/api/v1/carts/add-items', 'POST', payload).catch(function (error) {
+                setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
+                cartRawResult.textContent = error.message;
+            });
+        };
+
+        document.getElementById('decreaseItemBtn').onclick = function () {
+            let payload = getPayload();
+
+            requestCart('/api/v1/carts/decrease-items', 'POST', payload).catch(function (error) {
+                setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
+                cartRawResult.textContent = error.message;
+            });
+        };
+    </script>
+</body>
+</html>
