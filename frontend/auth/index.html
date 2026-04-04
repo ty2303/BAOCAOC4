@@ -207,7 +207,7 @@ document.getElementById('form-login').addEventListener('submit', async function 
         let res = await fetch(BASE + '/auth/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password, rememberMe: document.getElementById('remember-me').checked })
         });
         let data = await res.json();
         if (!res.ok) {

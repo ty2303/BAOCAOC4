@@ -31,6 +31,10 @@ module.exports = {
 
     update: async function (req, res) {
         try {
+            // User chỉ được sửa chính mình, ADMIN sửa được tất cả
+            if (req.roleName !== 'ADMIN' && req.params.id !== req.userId) {
+                return res.status(403).send({ message: 'Bạn không có quyền sửa tài khoản này' });
+            }
             let result = await usersService.update(req.params.id, req.body);
             if (!result) return res.status(404).send({ message: "Không tìm thấy" });
             res.send(result);

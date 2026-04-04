@@ -35,6 +35,7 @@ io.use(async function (socket, next) {
 
         socket.userId = user._id.toString();
         socket.roleName = user.role.name;
+        socket.displayName = user.fullName || user.username || 'User';
         next();
     } catch (err) {
         next(new Error('Token khong hop le hoac da het han'));
@@ -44,37 +45,37 @@ io.use(async function (socket, next) {
 io.on('connection', function (socket) {
     console.log('Socket da ket noi:', socket.userId, '-', socket.roleName);
 
+    let notificationRoomName = 'notification_' + socket.userId;
+    socket.join(notificationRoomName);
+    if (socket.roleName === 'ADMIN') {
+        socket.join('notification_admins');
+    }
+
     if (socket.roleName === 'USER') {
         let roomName = 'user_' + socket.userId;
         socket.join(roomName);
         console.log('USER vao room:', roomName);
     }
 
-    socket.on('join-room', async function (data) {
-        try {
-            if (socket.roleName !== 'ADMIN') {
-                return socket.emit('error-message', { message: 'Ban khong co quyen vao room nay' });
-            }
-
-            let userId = data.userId;
-            let user = await userModel.findById(userId);
-
-            if (!user) {
-                return socket.emit('error-message', { message: 'Khong tim thay user' });
-            }
-
-            let roomName = 'user_' + userId;
-            socket.join(roomName);
-
-            socket.emit('joined-room', {
-                room: roomName,
-                userId: userId
-            });
-
-            console.log('ADMIN vao room:', roomName);
-        } catch (err) {
-            socket.emit('error-message', { message: err.message });
+    socket.on('join-room', function (data) {
+        if (socket.roleName !== 'ADMIN') {
+            return socket.emit('error-message', { message: 'Ban khong co quyen vao room nay' });
         }
+
+        let userId = data && data.userId;
+        if (!userId) {
+            return socket.emit('error-message', { message: 'Thieu userId' });
+        }
+
+        let roomName = 'user_' + userId;
+        socket.join(roomName);
+
+        socket.emit('joined-room', {
+            room: roomName,
+            userId: userId
+        });
+
+        console.log('ADMIN vao room:', roomName);
     });
 
     // callback la ack de client biet server da nhan va luu tin nhan
@@ -118,15 +119,17 @@ io.on('connection', function (socket) {
 
             let newMessage = result.message;
 
-            await newMessage.populate({
-                path: 'sender',
-                select: 'username fullName role'
-            });
-
+            // Emit ngay lập tức TRƯỚC khi populate để giảm độ trễ
             if (result.created) {
                 let roomName = 'user_' + targetUserId;
                 io.to(roomName).emit('new-message', newMessage);
             }
+
+            // Populate sau emit (dùng cho callback, không ảnh hưởng tốc độ nhận tin nhắn)
+            await newMessage.populate({
+                path: 'sender',
+                select: 'username fullName role'
+            });
 
             if (typeof callback === 'function') {
                 callback({
@@ -139,29 +142,49 @@ io.on('connection', function (socket) {
 
             if (result.created) {
                 Promise.resolve().then(async function () {
-                    let senderUser = await userModel.findById(socket.userId).select('username fullName');
+                    let senderName = socket.displayName || 'User';
 
                     if (socket.roleName === 'USER') {
-                        let users = await userModel.find({ isDeleted: false }).populate('role');
+                        io.to('notification_admins').emit('new-notification', {
+                            title: 'Tin nhan moi',
+                            content: senderName + ' vua gui tin nhan',
+                            type: 'CHAT',
+                            link: '/admin/',
+                            isRead: false,
+                            createdAt: new Date().toISOString()
+                        });
+
+                        let users = await userModel.find({ isDeleted: false })
+                            .select('_id role')
+                            .populate({ path: 'role', select: 'name' });
 
                         let adminUsers = users.filter(function (item) {
                             return item.role && item.role.name === 'ADMIN';
                         });
 
-                        for (let admin of adminUsers) {
+                        await Promise.all(adminUsers.map(async function (admin) {
                             await notificationsService.create({
                                 user: admin._id,
                                 title: 'Tin nhan moi',
-                                content: (senderUser ? (senderUser.fullName || senderUser.username) : 'User') + ' vua gui tin nhan',
+                                content: senderName + ' vua gui tin nhan',
                                 type: 'CHAT',
                                 link: '/admin/'
                             });
-                        }
+                        }));
                     } else if (socket.roleName === 'ADMIN') {
+                        io.to('notification_' + targetUserId).emit('new-notification', {
+                            title: 'Admin da tra loi',
+                            content: senderName + ' vua tra loi tin nhan cua ban',
+                            type: 'CHAT',
+                            link: '/chat/',
+                            isRead: false,
+                            createdAt: new Date().toISOString()
+                        });
+
                         await notificationsService.create({
                             user: targetUserId,
                             title: 'Admin da tra loi',
-                            content: (senderUser ? (senderUser.fullName || senderUser.username) : 'Admin') + ' vua tra loi tin nhan cua ban',
+                            content: senderName + ' vua tra loi tin nhan cua ban',
                             type: 'CHAT',
                             link: '/chat/'
                         });

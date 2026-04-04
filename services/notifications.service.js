@@ -7,6 +7,14 @@ module.exports = {
         return newNotification;
     },
 
+    countUnread: async function (userId) {
+        return await notificationModel.countDocuments({
+            user: userId,
+            isDeleted: false,
+            isRead: false
+        });
+    },
+
     getMyNotifications: async function (userId) {
         return await notificationModel.find({
             user: userId,

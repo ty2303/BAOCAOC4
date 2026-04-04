@@ -22,7 +22,25 @@ function pickAllowedUpdateData(data) {
     return result;
 }
 
+function calculateDiscountAmount(coupon, orderValue) {
+    let amount = 0;
+    let numericOrderValue = Number(orderValue) || 0;
+
+    if (coupon.discountType === 'PERCENT') {
+        amount = numericOrderValue * Number(coupon.discount || 0) / 100;
+    } else {
+        amount = Number(coupon.discount || 0);
+    }
+
+    if (amount < 0) amount = 0;
+    if (amount > numericOrderValue) amount = numericOrderValue;
+
+    return Math.round(amount);
+}
+
 module.exports = {
+    calculateDiscountAmount: calculateDiscountAmount,
+
     getAll: async function () {
         return await couponModel.find({ isDeleted: false });
     },
@@ -33,7 +51,7 @@ module.exports = {
 
     create: async function (data) {
         if (!data.code) {
-            throw new Error('Mã giảm giá là bắt buộc');
+            throw new Error('Ma giam gia la bat buoc');
         }
 
         let newCoupon = new couponModel(data);
@@ -70,7 +88,7 @@ module.exports = {
 
     validateCoupon: async function (code, orderValue) {
         if (!code) {
-            throw new Error('Vui lòng nhập mã giảm giá');
+            throw new Error('Vui long nhap ma giam gia');
         }
 
         let coupon = await couponModel.findOne({
@@ -79,30 +97,57 @@ module.exports = {
         });
 
         if (!coupon) {
-            throw new Error('Mã giảm giá không tồn tại');
+            throw new Error('Ma giam gia khong ton tai');
         }
 
         if (!coupon.isActive) {
-            throw new Error('Mã giảm giá đã bị vô hiệu hóa');
+            throw new Error('Ma giam gia da bi vo hieu hoa');
         }
 
         let now = new Date();
         if (coupon.startDate && now < coupon.startDate) {
-            throw new Error('Mã giảm giá chưa đến thời gian sử dụng');
+            throw new Error('Ma giam gia chua den thoi gian su dung');
         }
 
         if (coupon.endDate && now > coupon.endDate) {
-            throw new Error('Mã giảm giá đã hết hạn');
+            throw new Error('Ma giam gia da het han');
         }
 
         if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) {
-            throw new Error('Mã giảm giá đã hết lượt sử dụng');
+            throw new Error('Ma giam gia da het luot su dung');
         }
 
         if (orderValue !== undefined && Number(orderValue) < coupon.minOrderValue) {
-            throw new Error('Đơn hàng chưa đạt giá trị tối thiểu để áp dụng mã giảm giá');
+            throw new Error('Don hang chua dat gia tri toi thieu de ap dung ma giam gia');
         }
 
-        return coupon;
+        let discountAmount = calculateDiscountAmount(coupon, orderValue);
+
+        return {
+            _id: coupon._id,
+            code: coupon.code,
+            description: coupon.description,
+            discount: coupon.discount,
+            discountType: coupon.discountType,
+            minOrderValue: coupon.minOrderValue,
+            discountAmount: discountAmount,
+            finalAmount: Math.max(0, Number(orderValue || 0) - discountAmount)
+        };
+    },
+
+    increaseUsedCount: async function (couponId, session) {
+        return await couponModel.findByIdAndUpdate(
+            couponId,
+            { $inc: { usedCount: 1 } },
+            { new: true, session: session }
+        );
+    },
+
+    decreaseUsedCount: async function (couponId, session) {
+        return await couponModel.findOneAndUpdate(
+            { _id: couponId, usedCount: { $gt: 0 } },
+            { $inc: { usedCount: -1 } },
+            { new: true, session: session }
+        );
     }
-}
+};

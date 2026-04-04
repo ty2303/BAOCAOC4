@@ -1,3 +1,23 @@
+// Auto-logout toàn cục khi server trả về 403 do token hết hạn
+(function () {
+    let _fetch = window.fetch;
+    window.fetch = async function () {
+        let response = await _fetch.apply(this, arguments);
+        if (response.status === 403 && localStorage.getItem('token')) {
+            let cloned = response.clone();
+            try {
+                let data = await cloned.json();
+                let msg = (data && data.message) ? data.message.toLowerCase() : '';
+                if (msg.includes('token') || msg.includes('het han') || msg.includes('hết hạn') || msg.includes('dang nhap') || msg.includes('đăng nhập')) {
+                    localStorage.clear();
+                    window.location.href = '/auth/';
+                }
+            } catch {}
+        }
+        return response;
+    };
+})();
+
 function normalizePath(path) {
     if (!path) return '/';
     if (path.length > 1 && path.endsWith('/')) {
@@ -49,6 +69,100 @@ function setActiveNav() {
     });
 }
 
+let notificationSocket = null;
+let unreadNotificationCount = 0;
+
+function setNotificationBadge(count) {
+    unreadNotificationCount = Number(count || 0);
+    let badgeText = unreadNotificationCount > 99 ? '99+' : String(unreadNotificationCount);
+
+    let ids = [
+        'nav-user-badge',
+        'nav-notifications-badge',
+        'nav-notifications-dropdown-badge'
+    ];
+
+    ids.forEach(function (id) {
+        let el = document.getElementById(id);
+        if (!el) return;
+        if (unreadNotificationCount > 0) {
+            el.textContent = badgeText;
+            el.classList.remove('d-none');
+        } else {
+            el.textContent = '0';
+            el.classList.add('d-none');
+        }
+    });
+}
+
+async function fetchUnreadNotificationCount() {
+    let token = localStorage.getItem('token');
+    if (!token) {
+        setNotificationBadge(0);
+        return;
+    }
+
+    try {
+        let response = await fetch('/api/v1/notifications/unread-count', {
+            headers: {
+                Authorization: 'Bearer ' + token
+            }
+        });
+
+        let data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Khong the tai so thong bao');
+        setNotificationBadge(data.unreadCount || 0);
+    } catch {
+        setNotificationBadge(0);
+    }
+}
+
+function ensureSocketIoScript() {
+    if (window.io) {
+        return Promise.resolve();
+    }
+
+    if (window.__socketIoLoadingPromise) {
+        return window.__socketIoLoadingPromise;
+    }
+
+    window.__socketIoLoadingPromise = new Promise(function (resolve, reject) {
+        let script = document.createElement('script');
+        script.src = '/socket.io/socket.io.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+
+    return window.__socketIoLoadingPromise;
+}
+
+async function connectNotificationSocket() {
+    let token = localStorage.getItem('token');
+    if (!token || notificationSocket) return;
+
+    try {
+        await ensureSocketIoScript();
+        if (!window.io) return;
+
+        notificationSocket = window.io(window.location.origin, {
+            transports: ['websocket'],
+            auth: { token: token }
+        });
+
+        notificationSocket.on('connect', function () {
+            fetchUnreadNotificationCount();
+        });
+
+        notificationSocket.on('new-notification', function (notification) {
+            setNotificationBadge(unreadNotificationCount + 1);
+            window.dispatchEvent(new CustomEvent('notification:new', {
+                detail: notification
+            }));
+        });
+    } catch {}
+}
+
 function initAuthHeader() {
     let token = localStorage.getItem('token');
     let username = localStorage.getItem('username');
@@ -78,6 +192,8 @@ function initAuthHeader() {
         guestEl.classList.add('d-none');
         userEl.classList.remove('d-none');
         if (nameEl) nameEl.textContent = username || 'Tai khoan';
+        fetchUnreadNotificationCount();
+        connectNotificationSocket();
 
         if (role === 'ADMIN') {
             if (brandEl) brandEl.setAttribute('href', '/admin/');
@@ -115,6 +231,7 @@ function initAuthHeader() {
         userEl.classList.add('d-none');
         if (wishlistItem) wishlistItem.style.display = 'none';
         if (notificationsItem) notificationsItem.style.display = 'none';
+        setNotificationBadge(0);
     }
 
     let logoutBtn = document.getElementById('btn-logout');
@@ -125,6 +242,8 @@ function initAuthHeader() {
         });
     }
 }
+
+window.refreshNotificationBadge = fetchUnreadNotificationCount;
 
 function getUserIdFromToken() {
     let token = localStorage.getItem('token');

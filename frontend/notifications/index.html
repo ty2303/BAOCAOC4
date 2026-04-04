@@ -51,7 +51,7 @@ function renderState(html) {
 
 function renderNotification(item) {
     let badge = item.isRead ? '<span class="badge bg-secondary">Da doc</span>' : '<span class="badge bg-primary">Moi</span>';
-    let action = item.isRead ? '' : '<button class="btn btn-sm btn-primary" onclick="markNotificationRead(\'' + item._id + '\')">Danh dau da doc</button>';
+    let action = item.isRead || !item._id ? '' : '<button class="btn btn-sm btn-primary" onclick="markNotificationRead(\'' + item._id + '\')">Danh dau da doc</button>';
     let link = item.link ? '<a class="btn btn-sm btn-outline-primary" href="' + item.link + '">Mo</a>' : '';
     return '<div class="border rounded-3 p-3 ' + (item.isRead ? '' : 'border-primary-subtle') + '">'
         + '<div class="d-flex justify-content-between align-items-start gap-3">'
@@ -64,6 +64,19 @@ function renderNotification(item) {
         + '</div>'
         + '<div class="d-flex gap-2 mt-3">' + action + link + '</div>'
         + '</div>';
+}
+
+function prependRealtimeNotification(item) {
+    let listEl = document.getElementById('notifications-list');
+    if (!listEl) return;
+
+    let current = listEl.innerHTML.trim();
+    if (!current || current.indexOf('Chua co thong bao nao.') !== -1) {
+        listEl.innerHTML = renderNotification(item);
+        return;
+    }
+
+    listEl.innerHTML = renderNotification(item) + current;
 }
 
 async function loadNotifications() {
@@ -102,6 +115,9 @@ async function markNotificationRead(id) {
         });
         let data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Cap nhat that bai');
+        if (window.refreshNotificationBadge) {
+            window.refreshNotificationBadge();
+        }
         loadNotifications();
     } catch (err) {
         alert(err.message);
@@ -116,11 +132,25 @@ async function markAllNotifications() {
         });
         let data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Cap nhat that bai');
+        if (window.refreshNotificationBadge) {
+            window.refreshNotificationBadge();
+        }
         loadNotifications();
     } catch (err) {
         alert(err.message);
     }
 }
+
+window.addEventListener('notification:new', function (event) {
+    let role = localStorage.getItem('role');
+    if (role === 'ADMIN') return;
+
+    if (event && event.detail) {
+        prependRealtimeNotification(event.detail);
+    }
+
+    setTimeout(loadNotifications, 800);
+});
 
 loadNotifications();
 </script>

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giỏ hàng - ShopVN</title>
+    <title>Gio hang - ShopVN</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/layout/styles.css">
     <script src="/layout/load-layout.js" defer></script>
@@ -40,39 +40,39 @@
 
         <div class="col-lg-4">
             <div class="summary-card">
-                <h5>Tóm tắt đơn hàng</h5>
+                <h5>Tom tat don hang</h5>
 
                 <div class="summary-row">
-                    <span class="text-muted">Tạm tính (<span id="item-count">0</span> sản phẩm)</span>
-                    <span id="subtotal">0 đ</span>
+                    <span class="text-muted">Tam tinh (<span id="item-count">0</span> san pham)</span>
+                    <span id="subtotal">0 d</span>
                 </div>
                 <div class="summary-row">
-                    <span class="text-muted">Phí vận chuyển</span>
-                    <span id="shipping-fee" class="text-success fw-semibold">Miễn phí</span>
+                    <span class="text-muted">Phi van chuyen</span>
+                    <span id="shipping-fee" class="text-success fw-semibold">Mien phi</span>
                 </div>
                 <div class="summary-row">
-                    <span class="text-muted">Giảm giá</span>
-                    <span id="discount" class="text-danger">-0 đ</span>
+                    <span class="text-muted">Giam gia</span>
+                    <span id="discount" class="text-danger">-0 d</span>
                 </div>
                 <div class="summary-row total">
-                    <span>Tổng cộng</span>
-                    <span id="total-price">0 đ</span>
+                    <span>Tong cong</span>
+                    <span id="total-price">0 d</span>
                 </div>
 
                 <div class="input-group coupon-wrap mb-2 mt-1">
-                    <input type="text" id="coupon-input" class="form-control form-control-sm" placeholder="Nhập mã giảm giá">
-                    <button class="btn btn-outline-secondary btn-sm" onclick="applyCoupon()">Áp dụng</button>
+                    <input type="text" id="coupon-input" class="form-control form-control-sm" placeholder="Nhap ma giam gia">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="applyCoupon()">Ap dung</button>
                 </div>
                 <div id="coupon-msg" style="font-size:.82rem; margin-bottom:8px;"></div>
                 <div class="text-muted" style="font-size:.8rem;">
-                    Mã giảm giá hiện mới kiểm tra hợp lệ, backend chưa trừ trực tiếp vào order.
+                    Ma hop le se duoc mang sang checkout va tinh lai tren backend.
                 </div>
 
                 <button class="btn-checkout" id="btn-checkout" onclick="goCheckout()">
-                    Đến trang đặt hàng
+                    Den trang dat hang
                 </button>
                 <a href="/products/" class="btn btn-outline-secondary w-100 mt-2" style="border-radius:10px; font-size:.9rem;">
-                    Tiếp tục mua sắm
+                    Tiep tuc mua sam
                 </a>
             </div>
         </div>
@@ -95,6 +95,7 @@
 const BASE = '/api/v1';
 let cartData = null;
 let couponDiscount = 0;
+let appliedCoupon = null;
 
 function showToast(msg, type) {
     let el = document.getElementById('toast-msg');
@@ -105,6 +106,14 @@ function showToast(msg, type) {
 
 function fmt(n) {
     return Number(n || 0).toLocaleString('vi-VN') + ' đ';
+}
+
+function saveAppliedCoupon() {
+    if (appliedCoupon) {
+        sessionStorage.setItem('checkout_coupon', JSON.stringify(appliedCoupon));
+    } else {
+        sessionStorage.removeItem('checkout_coupon');
+    }
 }
 
 function updateSummary() {
@@ -120,7 +129,7 @@ function updateSummary() {
 
     document.getElementById('item-count').textContent = cartData.items.length;
     document.getElementById('subtotal').textContent = fmt(subtotal);
-    document.getElementById('shipping-fee').textContent = shipping === 0 ? 'Miễn phí' : fmt(shipping);
+    document.getElementById('shipping-fee').textContent = shipping === 0 ? 'Mien phi' : fmt(shipping);
     document.getElementById('discount').textContent = '-' + fmt(couponDiscount);
     document.getElementById('total-price').textContent = fmt(total);
     document.getElementById('btn-checkout').disabled = cartData.items.length === 0;
@@ -129,12 +138,10 @@ function updateSummary() {
 function renderEmptyState() {
     document.getElementById('cart-content').innerHTML = `
         <div class="state-card">
-            <div class="icon">🛒</div>
-            <h4>Giỏ hàng trống</h4>
-            <p>Bạn chưa có sản phẩm nào trong giỏ.</p>
-            <a href="/products/" class="btn btn-primary px-4 py-2" style="border-radius:10px;">
-                Mua sắm ngay
-            </a>
+            <div class="icon">Cart</div>
+            <h4>Gio hang trong</h4>
+            <p>Ban chua co san pham nao trong gio.</p>
+            <a href="/products/" class="btn btn-primary px-4 py-2" style="border-radius:10px;">Mua sam ngay</a>
         </div>`;
 }
 
@@ -156,17 +163,17 @@ function renderCart() {
         return `
             <div class="cart-item-card">
                 <div class="cart-img">
-                    ${image ? `<img src="${image}" alt="${product.title || 'product'}">` : '🛍'}
+                    ${image ? `<img src="${image}" alt="${product.title || 'product'}">` : 'Img'}
                 </div>
                 <div class="cart-info">
-                    <div class="name">${product.title || 'Sản phẩm'}</div>
+                    <div class="name">${product.title || 'San pham'}</div>
                     <div class="cat">${product.category?.name || product.category || ''}</div>
                     <div class="price">${fmt(product.price || 0)}</div>
                 </div>
                 <div class="d-flex flex-column align-items-end gap-2">
-                    <button class="btn-remove" title="Xóa" onclick="removeItem('${productId}')">🗑</button>
+                    <button class="btn-remove" title="Xoa" onclick="removeItem('${productId}')">X</button>
                     <div class="qty-control">
-                        <button onclick="changeQty('${productId}', -1)">−</button>
+                        <button onclick="changeQty('${productId}', -1)">-</button>
                         <div class="qty-num">${item.quantity}</div>
                         <button onclick="changeQty('${productId}', 1)">+</button>
                     </div>
@@ -184,10 +191,10 @@ async function loadCart() {
         document.getElementById('cart-skeleton').style.display = 'none';
         document.getElementById('cart-content').innerHTML = `
             <div class="state-card">
-                <div class="icon">🔒</div>
-                <h4>Bạn chưa đăng nhập</h4>
-                <p>Đăng nhập để xem giỏ hàng và đặt hàng.</p>
-                <a href="/auth/" class="btn btn-primary px-4 py-2">Đăng nhập</a>
+                <div class="icon">Lock</div>
+                <h4>Ban chua dang nhap</h4>
+                <p>Dang nhap de xem gio hang va dat hang.</p>
+                <a href="/auth/" class="btn btn-primary px-4 py-2">Dang nhap</a>
             </div>`;
         return;
     }
@@ -217,10 +224,14 @@ async function loadCart() {
         }));
 
         renderCart();
+
+        if (appliedCoupon && cartData?.items?.length) {
+            await applyCoupon(appliedCoupon.code, true);
+        }
     } catch (err) {
         document.getElementById('cart-skeleton').style.display = 'none';
         document.getElementById('cart-items-list').innerHTML =
-            '<div class="state-card"><div class="icon">⚠️</div><p>Không thể tải giỏ hàng.</p></div>';
+            '<div class="state-card"><div class="icon">!</div><p>Khong the tai gio hang.</p></div>';
     }
 }
 
@@ -240,13 +251,13 @@ async function changeQty(productId, delta) {
 
         if (!res.ok) {
             let data = await res.json();
-            showToast(data.message || 'Thao tác thất bại', 'danger');
+            showToast(data.message || 'Thao tac that bai', 'danger');
             return;
         }
 
         await loadCart();
     } catch (err) {
-        showToast('Lỗi kết nối server', 'danger');
+        showToast('Loi ket noi server', 'danger');
     }
 }
 
@@ -271,20 +282,23 @@ async function removeItem(productId) {
             });
         }
 
-        showToast('Đã xóa sản phẩm khỏi giỏ', 'success');
+        showToast('Da xoa san pham khoi gio', 'success');
         await loadCart();
     } catch (err) {
-        showToast('Lỗi kết nối server', 'danger');
+        showToast('Loi ket noi server', 'danger');
     }
 }
 
-async function applyCoupon() {
-    let code = document.getElementById('coupon-input').value.trim();
+async function applyCoupon(forceCode, silent) {
+    let code = (forceCode || document.getElementById('coupon-input').value || '').trim();
     let token = localStorage.getItem('token');
     let msg = document.getElementById('coupon-msg');
+    document.getElementById('coupon-input').value = code;
 
     if (!code) {
         couponDiscount = 0;
+        appliedCoupon = null;
+        saveAppliedCoupon();
         msg.textContent = '';
         updateSummary();
         return;
@@ -307,25 +321,47 @@ async function applyCoupon() {
         let data = await res.json();
         if (res.ok) {
             couponDiscount = data.discountAmount || 0;
-            msg.innerHTML = `<span class="text-success">Áp dụng thành công: giảm ${fmt(couponDiscount)}</span>`;
+            appliedCoupon = {
+                code: data.code,
+                discountAmount: couponDiscount,
+                finalAmount: data.finalAmount || 0
+            };
+            saveAppliedCoupon();
+            msg.innerHTML = `<span class="text-success">Ap dung thanh cong: giam ${fmt(couponDiscount)}</span>`;
         } else {
             couponDiscount = 0;
-            msg.innerHTML = `<span class="text-danger">${data.message || 'Mã không hợp lệ'}</span>`;
+            appliedCoupon = null;
+            saveAppliedCoupon();
+            msg.innerHTML = `<span class="text-danger">${data.message || 'Ma khong hop le'}</span>`;
         }
 
         updateSummary();
     } catch (err) {
-        msg.innerHTML = '<span class="text-danger">Lỗi kết nối</span>';
+        if (!silent) {
+            msg.innerHTML = '<span class="text-danger">Loi ket noi</span>';
+        }
     }
 }
 
 function goCheckout() {
     if (!cartData || !cartData.items || cartData.items.length === 0) {
-        showToast('Giỏ hàng đang trống', 'warning');
+        showToast('Gio hang dang trong', 'warning');
         return;
     }
 
+    saveAppliedCoupon();
     window.location.href = '/checkout/';
+}
+
+try {
+    let savedCoupon = sessionStorage.getItem('checkout_coupon');
+    if (savedCoupon) {
+        appliedCoupon = JSON.parse(savedCoupon);
+        couponDiscount = Number(appliedCoupon.discountAmount || 0);
+    }
+} catch {
+    appliedCoupon = null;
+    couponDiscount = 0;
 }
 
 loadCart();

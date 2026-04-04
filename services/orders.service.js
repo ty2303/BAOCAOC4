@@ -4,32 +4,35 @@ const transactionModel = require("../schemas/transactions");
 const cartModel = require("../schemas/carts");
 const inventoryModel = require("../schemas/inventories");
 const addressesService = require("./addresses.service");
+const couponsService = require("./coupons.service");
+
+// Các bước chuyển trạng thái hợp lệ
+const ALLOWED_TRANSITIONS = {
+	processing: ['shipped'],
+	shipped: ['delivered']
+};
 
 module.exports = {
-	// Tạo đơn hàng + LOCK hàng trong kho (chuyển stock → reserved)
-	// Hàng chưa bán, chỉ giữ chỗ. Chờ thanh toán xong mới chuyển sang soldCount.
 	createOrder: async (userId, orderData) => {
 		const session = await mongoose.startSession();
 		session.startTransaction();
 
 		try {
-			// Lấy giỏ hàng, populate để lấy price
 			const cart = await cartModel
 				.findOne({ user: userId })
 				.session(session)
 				.populate("items.product");
 
 			if (!cart || cart.items.length === 0) {
-				throw new Error("Giỏ hàng trống");
+				throw new Error("Gio hang trong");
 			}
 
-			// Kiểm tra tồn kho + tính tổng tiền
-			let totalAmount = 0;
+			let subtotalAmount = 0;
 			const orderItems = [];
 
 			for (const item of cart.items) {
 				if (!item.product) {
-					throw new Error("Không tìm thấy sản phẩm trong giỏ hàng");
+					throw new Error("Khong tim thay san pham trong gio hang");
 				}
 
 				const inventory = await inventoryModel
@@ -38,17 +41,16 @@ module.exports = {
 
 				if (!inventory || inventory.stock < item.quantity) {
 					throw new Error(
-						'Sản phẩm "' +
+						'San pham "' +
 							item.product.title +
-							'" không đủ hàng. ' +
-							"Còn lại: " +
+							'" khong du hang. Con lai: ' +
 							(inventory ? inventory.stock : 0) +
-							", cần: " +
+							", can: " +
 							item.quantity,
 					);
 				}
 
-				totalAmount = totalAmount + item.product.price * item.quantity;
+				subtotalAmount = subtotalAmount + item.product.price * item.quantity;
 				orderItems.push({
 					productId: item.product._id,
 					quantity: item.quantity,
@@ -56,9 +58,20 @@ module.exports = {
 				});
 			}
 
-			// LOCK hàng (atomic) — chống oversale
-			// Dùng findOneAndUpdate + $gte để kiểm tra + trừ cùng lúc
-			// stock -= qty (trừ khỏi kho), reserved += qty (giữ chỗ)
+			let couponResult = null;
+			let couponCode = orderData.couponCode ? String(orderData.couponCode).trim().toUpperCase() : "";
+			let discountAmount = 0;
+
+			if (couponCode) {
+				couponResult = await couponsService.validateCoupon(couponCode, subtotalAmount);
+				discountAmount = Number(couponResult.discountAmount || 0);
+			}
+
+			let totalAmount = Math.max(0, subtotalAmount - discountAmount);
+
+			// Doan nay tuong duong if-else JS binh thuong:
+			// neu stock >= so luong can mua thi tru stock va cong reserved.
+			// Viet bang findOneAndUpdate de tranh 2 nguoi mua cung luc bi oversell.
 			for (const item of orderItems) {
 				const updatedInventory = await inventoryModel.findOneAndUpdate(
 					{
@@ -75,11 +88,10 @@ module.exports = {
 				);
 
 				if (!updatedInventory) {
-					throw new Error("Sản phẩm không đủ hàng (đã có người mua trước)");
+					throw new Error("San pham khong du hang (da co nguoi mua truoc)");
 				}
 			}
 
-			// Tạo order
 			const shippingAddress = await addressesService.getOrderAddressText(
 				userId,
 				orderData,
@@ -88,14 +100,16 @@ module.exports = {
 			const newOrder = new orderModel({
 				userId: userId,
 				items: orderItems,
+				subtotalAmount: subtotalAmount,
+				discountAmount: discountAmount,
 				totalAmount: totalAmount,
+				couponCode: couponResult ? couponResult.code : "",
 				shippingAddress: shippingAddress,
 				paymentMethod: orderData.paymentMethod,
 				status: "pending",
 			});
 			await newOrder.save({ session });
 
-			// Tạo transaction
 			const transaction = new transactionModel({
 				orderId: newOrder._id,
 				userId: userId,
@@ -106,7 +120,10 @@ module.exports = {
 			});
 			await transaction.save({ session });
 
-			// Xóa giỏ hàng
+			if (couponResult && couponResult._id) {
+				await couponsService.increaseUsedCount(couponResult._id, session);
+			}
+
 			await cartModel.findOneAndUpdate(
 				{ user: userId },
 				{ $set: { items: [] } },
@@ -122,4 +139,36 @@ module.exports = {
 			throw error;
 		}
 	},
+
+	getAllOrders: async (query) => {
+		const page = Number(query.page) || 1;
+		const limit = Number(query.limit) || 20;
+		const filter = {};
+		if (query.status) filter.status = query.status;
+		if (query.paymentMethod) filter.paymentMethod = query.paymentMethod;
+
+		const orders = await orderModel
+			.find(filter)
+			.populate('userId', 'username fullName email')
+			.sort({ createdAt: -1 })
+			.skip((page - 1) * limit)
+			.limit(limit);
+
+		const total = await orderModel.countDocuments(filter);
+		return { orders, total, page, limit };
+	},
+
+	updateOrderStatus: async (orderId, newStatus) => {
+		const order = await orderModel.findById(orderId);
+		if (!order) throw new Error('Khong tim thay don hang');
+
+		const allowed = ALLOWED_TRANSITIONS[order.status];
+		if (!allowed || !allowed.includes(newStatus)) {
+			throw new Error('Khong the chuyen trang thai tu "' + order.status + '" sang "' + newStatus + '"');
+		}
+
+		order.status = newStatus;
+		await order.save();
+		return order;
+	}
 };
