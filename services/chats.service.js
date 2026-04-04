@@ -16,22 +16,62 @@ module.exports = {
         return room;
     },
 
-    createMessage: async function (userId, senderId, senderType, content) {
+    createMessage: async function (userId, senderId, senderType, content, clientMessageId) {
         let room = await this.findOrCreateRoomByUser(userId);
+
+        // Neu client gui lai cung 1 tin nhan do mat mang/timeout thi tra lai ban ghi cu
+        if (clientMessageId) {
+            let oldMessage = await messageModel.findOne({
+                room: room._id,
+                clientMessageId: clientMessageId
+            });
+
+            if (oldMessage) {
+                return {
+                    message: oldMessage,
+                    created: false,
+                    room: room
+                };
+            }
+        }
 
         let newMessage = new messageModel({
             room: room._id,
             sender: senderId,
             senderType: senderType,
-            content: content
+            content: content,
+            clientMessageId: clientMessageId || null
         });
-        await newMessage.save();
+        try {
+            await newMessage.save();
+        } catch (err) {
+            if (err.code === 11000 && clientMessageId) {
+                let oldMessage = await messageModel.findOne({
+                    room: room._id,
+                    clientMessageId: clientMessageId
+                });
+
+                if (oldMessage) {
+                    return {
+                        message: oldMessage,
+                        created: false,
+                        room: room
+                    };
+                }
+            }
+
+            throw err;
+        }
 
         room.lastMessage = content;
         room.lastSenderType = senderType;
         await room.save();
 
-        return newMessage;
+        return {
+            message: newMessage,
+            created: true,
+            room: room
+        };
     },
 
     getMessagesByUser: async function (userId) {

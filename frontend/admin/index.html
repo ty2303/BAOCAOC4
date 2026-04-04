@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - ShopVN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+<div data-include="/layout/header.html"></div>
+
+<div id="denied" class="container py-5" style="display:none;">
+    <div class="state-card" style="max-width:520px;margin:auto;">
+        <div class="icon">!</div>
+        <h4>Khong co quyen truy cap</h4>
+        <p>Trang nay chi danh cho ADMIN.</p>
+        <a href="/home/" class="btn btn-primary">Ve trang chu</a>
+    </div>
+</div>
+
+<div id="app" class="container py-4" style="display:none;">
+    <h3 class="fw-bold mb-3">Trang quan tri</h3>
+
+    <ul class="nav nav-pills gap-2 mb-4 flex-wrap">
+        <li class="nav-item"><button class="nav-link active" onclick="openTab('products', this)">San pham</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('users', this)">Nguoi dung</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('categories', this)">Danh muc</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('inventories', this)">Ton kho</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('coupons', this)">Coupon</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('transactions', this)">Transaction</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('chat', this)">Chat</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('notifications', this)">Thong bao</button></li>
+        <li class="nav-item"><button class="nav-link" onclick="openTab('upload', this)">Upload</button></li>
+    </ul>
+
+    <div id="tab-products">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Luu san pham</h5>
+                        <input type="hidden" id="p-id">
+                        <input class="form-control mb-2" id="p-title" placeholder="Ten san pham">
+                        <input class="form-control mb-2" id="p-sku" placeholder="SKU">
+                        <input class="form-control mb-2" id="p-category" list="category-list" placeholder="Danh muc">
+                        <datalist id="category-list"></datalist>
+                        <input class="form-control mb-2" id="p-price" type="number" placeholder="Gia">
+                        <input class="form-control mb-2" id="p-stock" type="number" value="0" placeholder="Ton kho ban dau">
+                        <textarea class="form-control mb-2" id="p-desc" rows="3" placeholder="Mo ta"></textarea>
+                        <textarea class="form-control mb-2" id="p-images" rows="4" placeholder="Moi anh mot dong"></textarea>
+                        <div id="p-err" class="text-danger small mb-2"></div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="saveProduct()">Luu</button>
+                            <button class="btn btn-outline-secondary" onclick="resetProduct()">Lam moi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Danh sach san pham</h5>
+                            <button class="btn btn-outline-primary btn-sm" onclick="loadProducts()">Tai lai</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead><tr><th>Ten</th><th>Danh muc</th><th>Gia</th><th>SKU</th><th></th></tr></thead>
+                                <tbody id="products-body"><tr><td colspan="5" class="text-center py-4">Dang tai...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-users" style="display:none;">
+        <div class="card border-0 shadow-sm" style="border-radius:14px;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Nguoi dung</h5>
+                    <button class="btn btn-outline-primary btn-sm" onclick="loadUsers()">Tai lai</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead><tr><th>Username</th><th>Ho ten</th><th>Email</th><th>Role</th><th>Trang thai</th></tr></thead>
+                        <tbody id="users-body"><tr><td colspan="5" class="text-center py-4">Dang tai...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-categories" style="display:none;">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Luu danh muc</h5>
+                        <input type="hidden" id="cat-id">
+                        <input class="form-control mb-2" id="cat-name" placeholder="Ten danh muc">
+                        <textarea class="form-control mb-2" id="cat-desc" rows="3" placeholder="Mo ta"></textarea>
+                        <div id="cat-err" class="text-danger small mb-2"></div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="saveCategory()">Luu</button>
+                            <button class="btn btn-outline-secondary" onclick="resetCategory()">Lam moi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Danh sach danh muc</h5>
+                            <button class="btn btn-outline-primary btn-sm" onclick="loadCategories()">Tai lai</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead><tr><th>Ten</th><th>Mo ta</th><th></th></tr></thead>
+                                <tbody id="categories-body"><tr><td colspan="3" class="text-center py-4">Dang tai...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-inventories" style="display:none;">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Cap nhat ton kho</h5>
+                        <input class="form-control mb-2" id="inventory-product" placeholder="Product ID">
+                        <input class="form-control mb-2" id="inventory-quantity" type="number" min="1" value="1" placeholder="So luong">
+                        <div id="inventory-msg" class="small mb-2"></div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-success" onclick="changeStock('increase')">Tang ton</button>
+                            <button class="btn btn-outline-danger" onclick="changeStock('decrease')">Giam ton</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Danh sach ton kho</h5>
+                            <button class="btn btn-outline-primary btn-sm" onclick="loadInventories()">Tai lai</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead><tr><th>San pham</th><th>Gia</th><th>Ton</th><th>Reserved</th><th>Da ban</th><th></th></tr></thead>
+                                <tbody id="inventories-body"><tr><td colspan="6" class="text-center py-4">Dang tai...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-coupons" style="display:none;">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Luu coupon</h5>
+                        <input type="hidden" id="c-id">
+                        <input class="form-control mb-2" id="c-code" placeholder="Ma">
+                        <textarea class="form-control mb-2" id="c-desc" rows="2" placeholder="Mo ta"></textarea>
+                        <select class="form-select mb-2" id="c-type"><option value="PERCENT">PERCENT</option><option value="FIXED">FIXED</option></select>
+                        <input class="form-control mb-2" id="c-discount" type="number" placeholder="Gia tri giam">
+                        <input class="form-control mb-2" id="c-min" type="number" value="0" placeholder="Don toi thieu">
+                        <input class="form-control mb-2" id="c-max" type="number" value="0" placeholder="So luot toi da">
+                        <input class="form-control mb-2" id="c-start" type="datetime-local">
+                        <input class="form-control mb-2" id="c-end" type="datetime-local">
+                        <div id="c-err" class="text-danger small mb-2"></div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-primary" onclick="saveCoupon()">Luu</button>
+                            <button class="btn btn-outline-secondary" onclick="resetCoupon()">Lam moi</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5 class="fw-bold mb-0">Danh sach coupon</h5>
+                            <button class="btn btn-outline-primary btn-sm" onclick="loadCoupons()">Tai lai</button>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table align-middle">
+                                <thead><tr><th>Ma</th><th>Loai</th><th>Giam</th><th>Toi thieu</th><th>Trang thai</th><th></th></tr></thead>
+                                <tbody id="coupons-body"><tr><td colspan="6" class="text-center py-4">Dang tai...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-transactions" style="display:none;">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Tra cuu transactionId</h5>
+                        <input class="form-control mb-2" id="t-id" placeholder="Nhap transactionId">
+                        <div class="d-flex gap-2 flex-wrap mb-2">
+                            <button class="btn btn-outline-primary" onclick="loadTransaction()">Xem</button>
+                            <button class="btn btn-success" onclick="updateTransaction('success')">Success</button>
+                            <button class="btn btn-outline-danger" onclick="updateTransaction('failed')">Failed</button>
+                        </div>
+                        <div id="t-msg" class="small"></div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Tra cuu orderId</h5>
+                        <input class="form-control mb-2" id="o-id" placeholder="Nhap orderId">
+                        <button class="btn btn-outline-primary" onclick="loadByOrder()">Xem theo order</button>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Chi tiet transaction</h5>
+                        <div id="t-detail" class="text-muted">Chua co du lieu.</div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Danh sach transaction theo order</h5>
+                        <div id="order-list" class="text-muted">Chua co du lieu.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-chat" style="display:none;">
+        <div class="admin-chat-layout">
+            <div class="admin-room-list">
+                <div class="admin-room-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="fw-bold">Phong chat</div>
+                        <div class="admin-room-meta">Danh sach user da nhan tin</div>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="loadChatRooms()">Tai lai</button>
+                </div>
+                <div class="admin-room-body" id="chat-room-list">
+                    <div class="p-3 text-muted">Chua co phong chat.</div>
+                </div>
+            </div>
+            <div class="admin-chat-box">
+                <div class="admin-chat-header">
+                    <div class="fw-bold" id="admin-chat-title">Chon mot phong chat</div>
+                    <div class="admin-chat-subtitle" id="admin-chat-subtitle">Admin xem lich su va tra loi user tai day.</div>
+                </div>
+                <div class="chat-messages" id="admin-chat-messages">
+                    <div class="admin-chat-placeholder">Chua chon cuoc tro chuyen nao.</div>
+                </div>
+                <div class="chat-form">
+                    <div class="input-group">
+                        <input type="text" id="admin-chat-input" class="form-control" placeholder="Nhap tin nhan tra loi user...">
+                        <button class="btn btn-primary" onclick="sendAdminMessage()">Gui</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-notifications" style="display:none;">
+        <div class="card border-0 shadow-sm" style="border-radius:14px;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">Thong bao cua admin</h5>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-outline-primary btn-sm" onclick="loadAdminNotifications()">Tai lai</button>
+                        <button class="btn btn-primary btn-sm" onclick="markAllAdminNotifications()">Danh dau da doc tat ca</button>
+                    </div>
+                </div>
+                <div id="admin-notifications-list" class="d-grid gap-3">
+                    <div class="text-muted">Dang tai...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="tab-upload" style="display:none;">
+        <div class="row g-4">
+            <div class="col-lg-4">
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Upload 1 anh</h5>
+                        <input type="file" id="upload-single-file" class="form-control mb-2" accept="image/*">
+                        <button class="btn btn-primary" onclick="uploadSingleImage()">Upload</button>
+                        <div id="upload-single-result" class="small mt-3"></div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm mb-4" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Upload nhieu anh</h5>
+                        <input type="file" id="upload-multiple-files" class="form-control mb-2" accept="image/*" multiple>
+                        <button class="btn btn-primary" onclick="uploadMultipleImages()">Upload</button>
+                        <div id="upload-multiple-result" class="small mt-3"></div>
+                    </div>
+                </div>
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Import Excel san pham</h5>
+                        <input type="file" id="upload-excel-file" class="form-control mb-2" accept=".xlsx,.xls">
+                        <button class="btn btn-success" onclick="uploadExcelFile()">Import</button>
+                        <div id="upload-excel-result" class="small mt-3"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body">
+                        <h5 class="fw-bold mb-3">Huong dan nhanh</h5>
+                        <ul class="mb-0">
+                            <li>Upload 1 anh: dung cho preview nhanh khi tao san pham.</li>
+                            <li>Upload nhieu anh: lay danh sach link anh de dan vao o images cua san pham.</li>
+                            <li>Import Excel: file can theo cot SKU, Title, Category, Price, Stock.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast-msg" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="toast-text"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<div data-include="/layout/footer.html"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+<script>
+const BASE = '/api/v1';
+const token = localStorage.getItem('token');
+const role = localStorage.getItem('role');
+let adminSocket = null;
+let chatRooms = [];
+let selectedChatUserId = '';
+let selectedChatRoomId = '';
+let adminChatMessages = [];
+let pendingAdminMessageIds = new Set();
+let categoriesCache = [];
+
+function toast(message, type) {
+    let el = document.getElementById('toast-msg');
+    el.className = 'toast align-items-center border-0 text-bg-' + (type || 'success');
+    document.getElementById('toast-text').textContent = message;
+    bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 }).show();
+}
+
+function formatMoney(n) {
+    return Number(n || 0).toLocaleString('vi-VN') + ' d';
+}
+
+function authHeaders(json) {
+    let result = { Authorization: 'Bearer ' + token };
+    if (json) result['Content-Type'] = 'application/json';
+    return result;
+}
+
+function emptyRow(cols, message) {
+    return '<tr><td colspan="' + cols + '" class="text-center text-muted py-4">' + message + '</td></tr>';
+}
+
+function toLocalInput(value) {
+    if (!value) return '';
+    let d = new Date(value);
+    if (Number.isNaN(d.getTime())) return '';
+    let y = d.getFullYear();
+    let m = String(d.getMonth() + 1).padStart(2, '0');
+    let da = String(d.getDate()).padStart(2, '0');
+    let h = String(d.getHours()).padStart(2, '0');
+    let mi = String(d.getMinutes()).padStart(2, '0');
+    return y + '-' + m + '-' + da + 'T' + h + ':' + mi;
+}
+
+function escapeHtml(value) {
+    return String(value || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function openTab(name, btn) {
+    ['products', 'users', 'categories', 'inventories', 'coupons', 'transactions', 'chat', 'notifications', 'upload']
+        .forEach(function (tab) {
+            document.getElementById('tab-' + tab).style.display = tab === name ? '' : 'none';
+        });
+
+    document.querySelectorAll('.nav-link').forEach(function (item) {
+        item.classList.remove('active');
+    });
+    btn.classList.add('active');
+
+    if (name === 'products') loadProducts();
+    if (name === 'users') loadUsers();
+    if (name === 'categories') loadCategories();
+    if (name === 'inventories') loadInventories();
+    if (name === 'coupons') loadCoupons();
+    if (name === 'chat') { connectAdminSocket(); loadChatRooms(); }
+    if (name === 'notifications') loadAdminNotifications();
+}
+
+async function requestJson(url, options) {
+    let response = await fetch(url, options);
+    let data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Request that bai');
+    return data;
+}
+
+function resetProduct() {
+    ['p-id', 'p-title', 'p-sku', 'p-category', 'p-price', 'p-desc', 'p-images'].forEach(function (id) {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('p-stock').value = '0';
+    document.getElementById('p-err').textContent = '';
+}
+
+function fillProduct(product) {
+    document.getElementById('p-id').value = product._id || '';
+    document.getElementById('p-title').value = product.title || '';
+    document.getElementById('p-sku').value = product.sku || '';
+    document.getElementById('p-category').value = product.category || '';
+    document.getElementById('p-price').value = product.price || '';
+    document.getElementById('p-desc').value = product.description || '';
+    document.getElementById('p-images').value = (product.images || []).join('\n');
+    document.getElementById('p-err').textContent = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function fillProductById(id) {
+    let product = (window.__productsCache || []).find(function (item) {
+        return item._id === id;
+    });
+    if (product) fillProduct(product);
+}
+
+async function loadProducts() {
+    try {
+        let data = await requestJson(BASE + '/products?limit=100&page=1');
+        let list = Array.isArray(data) ? data : (data.products || data.data || []);
+        window.__productsCache = list;
+        document.getElementById('products-body').innerHTML = list.map(function (item) {
+            return '<tr>'
+                + '<td><div class="fw-semibold">' + escapeHtml(item.title) + '</div><small class="text-muted">' + escapeHtml(item.description || '') + '</small></td>'
+                + '<td>' + escapeHtml(item.category || '') + '</td>'
+                + '<td class="text-danger fw-bold">' + formatMoney(item.price) + '</td>'
+                + '<td>' + escapeHtml(item.sku || '') + '</td>'
+                + '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="fillProductById(\'' + item._id + '\')">Sua</button><button class="btn btn-sm btn-outline-danger" onclick="deleteProduct(\'' + item._id + '\')">Xoa</button></td>'
+                + '</tr>';
+        }).join('') || emptyRow(5, 'Khong co san pham.');
+    } catch (err) {
+        document.getElementById('products-body').innerHTML = emptyRow(5, err.message);
+    }
+}
+
+async function saveProduct() {
+    let id = document.getElementById('p-id').value.trim();
+    let body = {
+        title: document.getElementById('p-title').value.trim(),
+        sku: document.getElementById('p-sku').value.trim(),
+        category: document.getElementById('p-category').value.trim(),
+        price: Number(document.getElementById('p-price').value || 0),
+        stock: Number(document.getElementById('p-stock').value || 0),
+        description: document.getElementById('p-desc').value.trim(),
+        images: document.getElementById('p-images').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean)
+    };
+    if (!body.title || !body.sku || !body.category) {
+        document.getElementById('p-err').textContent = 'Ten, SKU va danh muc la bat buoc.';
+        return;
+    }
+    try {
+        await requestJson(id ? BASE + '/products/' + id : BASE + '/products', {
+            method: id ? 'PUT' : 'POST',
+            headers: authHeaders(true),
+            body: JSON.stringify(body)
+        });
+        toast(id ? 'Da cap nhat san pham.' : 'Da tao san pham.', 'success');
+        resetProduct();
+        loadProducts();
+        loadInventories();
+    } catch (err) {
+        document.getElementById('p-err').textContent = err.message;
+    }
+}
+
+async function deleteProduct(id) {
+    if (!confirm('Xoa san pham nay?')) return;
+    try {
+        await requestJson(BASE + '/products/' + id, { method: 'DELETE', headers: authHeaders() });
+        toast('Da xoa san pham.', 'success');
+        loadProducts();
+        loadInventories();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+async function loadUsers() {
+    try {
+        let list = await requestJson(BASE + '/users', { headers: authHeaders() });
+        document.getElementById('users-body').innerHTML = list.map(function (item) {
+            return '<tr>'
+                + '<td>' + escapeHtml(item.username || '') + '</td>'
+                + '<td>' + escapeHtml(item.fullName || '') + '</td>'
+                + '<td>' + escapeHtml(item.email || '') + '</td>'
+                + '<td><span class="badge ' + (item.role && item.role.name === 'ADMIN' ? 'bg-danger' : 'bg-primary') + '">' + escapeHtml(item.role && item.role.name || '') + '</span></td>'
+                + '<td>' + (item.isDeleted ? '<span class="badge bg-secondary">Da xoa</span>' : '<span class="badge bg-success">Hoat dong</span>') + '</td>'
+                + '</tr>';
+        }).join('') || emptyRow(5, 'Khong co nguoi dung.');
+    } catch (err) {
+        document.getElementById('users-body').innerHTML = emptyRow(5, err.message);
+    }
+}
+
+function resetCategory() {
+    document.getElementById('cat-id').value = '';
+    document.getElementById('cat-name').value = '';
+    document.getElementById('cat-desc').value = '';
+    document.getElementById('cat-err').textContent = '';
+}
+
+function fillCategory(id) {
+    let item = categoriesCache.find(function (x) { return x._id === id; });
+    if (!item) return;
+    document.getElementById('cat-id').value = item._id || '';
+    document.getElementById('cat-name').value = item.name || '';
+    document.getElementById('cat-desc').value = item.description || '';
+    document.getElementById('cat-err').textContent = '';
+}
+
+function renderCategoryDatalist() {
+    document.getElementById('category-list').innerHTML = categoriesCache.map(function (item) {
+        return '<option value="' + escapeHtml(item.name) + '"></option>';
+    }).join('');
+}
+
+async function loadCategories() {
+    try {
+        categoriesCache = await requestJson(BASE + '/categories');
+        renderCategoryDatalist();
+        document.getElementById('categories-body').innerHTML = categoriesCache.map(function (item) {
+            return '<tr>'
+                + '<td class="fw-semibold">' + escapeHtml(item.name) + '</td>'
+                + '<td>' + escapeHtml(item.description || '') + '</td>'
+                + '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="fillCategory(\'' + item._id + '\')">Sua</button><button class="btn btn-sm btn-outline-danger" onclick="deleteCategory(\'' + item._id + '\')">Xoa</button></td>'
+                + '</tr>';
+        }).join('') || emptyRow(3, 'Khong co danh muc.');
+    } catch (err) {
+        document.getElementById('categories-body').innerHTML = emptyRow(3, err.message);
+    }
+}
+
+async function saveCategory() {
+    let id = document.getElementById('cat-id').value.trim();
+    let body = {
+        name: document.getElementById('cat-name').value.trim(),
+        description: document.getElementById('cat-desc').value.trim()
+    };
+    if (!body.name) {
+        document.getElementById('cat-err').textContent = 'Ten danh muc la bat buoc.';
+        return;
+    }
+    try {
+        await requestJson(id ? BASE + '/categories/' + id : BASE + '/categories', {
+            method: id ? 'PUT' : 'POST',
+            headers: authHeaders(true),
+            body: JSON.stringify(body)
+        });
+        toast(id ? 'Da cap nhat danh muc.' : 'Da tao danh muc.', 'success');
+        resetCategory();
+        loadCategories();
+    } catch (err) {
+        document.getElementById('cat-err').textContent = err.message;
+    }
+}
+
+async function deleteCategory(id) {
+    if (!confirm('Xoa danh muc nay?')) return;
+    try {
+        await requestJson(BASE + '/categories/' + id, { method: 'DELETE', headers: authHeaders() });
+        toast('Da xoa danh muc.', 'success');
+        loadCategories();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+async function loadInventories() {
+    try {
+        let list = await requestJson(BASE + '/inventories');
+        document.getElementById('inventories-body').innerHTML = list.map(function (item) {
+            let product = item.product || {};
+            let productId = product._id || item.product || '';
+            return '<tr>'
+                + '<td><div class="fw-semibold">' + escapeHtml(product.title || '') + '</div><small class="text-muted">' + escapeHtml(productId) + '</small></td>'
+                + '<td>' + formatMoney(product.price || 0) + '</td>'
+                + '<td>' + Number(item.stock || 0) + '</td>'
+                + '<td>' + Number(item.reserved || 0) + '</td>'
+                + '<td>' + Number(item.soldCount || 0) + '</td>'
+                + '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="prefillInventory(\'' + productId + '\', 1)">+/-</button></td>'
+                + '</tr>';
+        }).join('') || emptyRow(6, 'Khong co ton kho.');
+    } catch (err) {
+        document.getElementById('inventories-body').innerHTML = emptyRow(6, err.message);
+    }
+}
+
+function prefillInventory(productId, quantity) {
+    document.getElementById('inventory-product').value = productId;
+    document.getElementById('inventory-quantity').value = quantity || 1;
+}
+
+async function changeStock(type) {
+    let product = document.getElementById('inventory-product').value.trim();
+    let quantity = Number(document.getElementById('inventory-quantity').value || 0);
+    let msg = document.getElementById('inventory-msg');
+    if (!product || quantity <= 0) {
+        msg.innerHTML = '<span class="text-danger">Product ID va so luong phai hop le.</span>';
+        return;
+    }
+    try {
+        await requestJson(BASE + '/inventories/' + (type === 'increase' ? 'increase-stock' : 'decrease-stock'), {
+            method: 'POST',
+            headers: authHeaders(true),
+            body: JSON.stringify({ product: product, quantity: quantity })
+        });
+        msg.innerHTML = '<span class="text-success">Da cap nhat ton kho.</span>';
+        toast('Da cap nhat ton kho.', 'success');
+        loadInventories();
+    } catch (err) {
+        msg.innerHTML = '<span class="text-danger">' + escapeHtml(err.message) + '</span>';
+    }
+}
+
+function resetCoupon() {
+    ['c-id', 'c-code', 'c-desc', 'c-discount', 'c-start', 'c-end'].forEach(function (id) {
+        document.getElementById(id).value = '';
+    });
+    document.getElementById('c-type').value = 'PERCENT';
+    document.getElementById('c-min').value = '0';
+    document.getElementById('c-max').value = '0';
+    document.getElementById('c-err').textContent = '';
+}
+
+function fillCoupon(id) {
+    let item = (window.__couponsCache || []).find(function (x) { return x._id === id; });
+    if (!item) return;
+    document.getElementById('c-id').value = item._id || '';
+    document.getElementById('c-code').value = item.code || '';
+    document.getElementById('c-desc').value = item.description || '';
+    document.getElementById('c-type').value = item.discountType || 'PERCENT';
+    document.getElementById('c-discount').value = item.discount || '';
+    document.getElementById('c-min').value = item.minOrderValue || 0;
+    document.getElementById('c-max').value = item.maxUses || 0;
+    document.getElementById('c-start').value = toLocalInput(item.startDate);
+    document.getElementById('c-end').value = toLocalInput(item.endDate);
+    document.getElementById('c-err').textContent = '';
+}
+
+async function loadCoupons() {
+    try {
+        let list = await requestJson(BASE + '/coupons', { headers: authHeaders() });
+        window.__couponsCache = list;
+        document.getElementById('coupons-body').innerHTML = list.map(function (item) {
+            return '<tr>'
+                + '<td><div class="fw-semibold">' + escapeHtml(item.code) + '</div><small class="text-muted">' + escapeHtml(item.description || '') + '</small></td>'
+                + '<td>' + escapeHtml(item.discountType) + '</td>'
+                + '<td>' + (item.discountType === 'PERCENT' ? item.discount + '%' : formatMoney(item.discount)) + '</td>'
+                + '<td>' + formatMoney(item.minOrderValue || 0) + '</td>'
+                + '<td>' + (item.isActive ? '<span class="badge bg-success">Hoat dong</span>' : '<span class="badge bg-secondary">Tat</span>') + '</td>'
+                + '<td><button class="btn btn-sm btn-outline-primary me-1" onclick="fillCoupon(\'' + item._id + '\')">Sua</button><button class="btn btn-sm btn-outline-secondary me-1" onclick="toggleCoupon(\'' + item._id + '\')">Bat/Tat</button><button class="btn btn-sm btn-outline-danger" onclick="deleteCoupon(\'' + item._id + '\')">Xoa</button></td>'
+                + '</tr>';
+        }).join('') || emptyRow(6, 'Khong co coupon.');
+    } catch (err) {
+        document.getElementById('coupons-body').innerHTML = emptyRow(6, err.message);
+    }
+}
+
+async function saveCoupon() {
+    let id = document.getElementById('c-id').value.trim();
+    let body = {
+        code: document.getElementById('c-code').value.trim().toUpperCase(),
+        description: document.getElementById('c-desc').value.trim(),
+        discountType: document.getElementById('c-type').value,
+        discount: Number(document.getElementById('c-discount').value || 0),
+        minOrderValue: Number(document.getElementById('c-min').value || 0),
+        maxUses: Number(document.getElementById('c-max').value || 0),
+        startDate: document.getElementById('c-start').value || null,
+        endDate: document.getElementById('c-end').value || null
+    };
+    if (!body.code || !body.discount) {
+        document.getElementById('c-err').textContent = 'Ma va gia tri giam la bat buoc.';
+        return;
+    }
+    try {
+        await requestJson(id ? BASE + '/coupons/' + id : BASE + '/coupons', {
+            method: id ? 'PUT' : 'POST',
+            headers: authHeaders(true),
+            body: JSON.stringify(body)
+        });
+        toast(id ? 'Da cap nhat coupon.' : 'Da tao coupon.', 'success');
+        resetCoupon();
+        loadCoupons();
+    } catch (err) {
+        document.getElementById('c-err').textContent = err.message;
+    }
+}
+
+async function toggleCoupon(id) {
+    try {
+        await requestJson(BASE + '/coupons/' + id + '/toggle-active', {
+            method: 'PATCH',
+            headers: authHeaders()
+        });
+        toast('Da cap nhat trang thai coupon.', 'success');
+        loadCoupons();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+async function deleteCoupon(id) {
+    if (!confirm('Xoa coupon nay?')) return;
+    try {
+        await requestJson(BASE + '/coupons/' + id, { method: 'DELETE', headers: authHeaders() });
+        toast('Da xoa coupon.', 'success');
+        loadCoupons();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+async function loadTransaction() {
+    let id = document.getElementById('t-id').value.trim();
+    if (!id) {
+        document.getElementById('t-msg').innerHTML = '<span class="text-danger">Vui long nhap transactionId.</span>';
+        return;
+    }
+    try {
+        let item = await requestJson(BASE + '/transactions/' + id, { headers: authHeaders() });
+        document.getElementById('t-detail').innerHTML =
+            '<div><strong>ID:</strong> ' + escapeHtml(item._id) + '</div>'
+            + '<div><strong>Order:</strong> ' + escapeHtml(item.orderId && (item.orderId._id || item.orderId) || '') + '</div>'
+            + '<div><strong>User:</strong> ' + escapeHtml(item.userId && (item.userId.username || item.userId.email) || '') + '</div>'
+            + '<div><strong>Loai:</strong> ' + escapeHtml(item.type) + '</div>'
+            + '<div><strong>Trang thai:</strong> ' + escapeHtml(item.status) + '</div>'
+            + '<div><strong>Phuong thuc:</strong> ' + escapeHtml(item.paymentMethod) + '</div>'
+            + '<div><strong>So tien:</strong> ' + formatMoney(item.amount) + '</div>'
+            + '<div><strong>Ngay tao:</strong> ' + new Date(item.createdAt).toLocaleString('vi-VN') + '</div>';
+    } catch (err) {
+        document.getElementById('t-detail').innerHTML = '<span class="text-danger">' + escapeHtml(err.message) + '</span>';
+    }
+}
+
+async function loadByOrder() {
+    let id = document.getElementById('o-id').value.trim();
+    if (!id) {
+        document.getElementById('order-list').innerHTML = '<span class="text-danger">Vui long nhap orderId.</span>';
+        return;
+    }
+    try {
+        let list = await requestJson(BASE + '/transactions/order/' + id, { headers: authHeaders() });
+        document.getElementById('order-list').innerHTML = (Array.isArray(list) ? list : []).map(function (item) {
+            return '<div class="border rounded-3 p-3 mb-2">'
+                + '<div><strong>ID:</strong> ' + escapeHtml(item._id) + '</div>'
+                + '<div><strong>Loai:</strong> ' + escapeHtml(item.type) + '</div>'
+                + '<div><strong>Trang thai:</strong> ' + escapeHtml(item.status) + '</div>'
+                + '<div><strong>So tien:</strong> ' + formatMoney(item.amount) + '</div>'
+                + '<div><strong>Phuong thuc:</strong> ' + escapeHtml(item.paymentMethod) + '</div>'
+                + '<div class="mt-2 d-flex gap-2"><button class="btn btn-sm btn-success" onclick="quickTransactionStatus(\'' + item._id + '\', \'success\')">Success</button><button class="btn btn-sm btn-outline-danger" onclick="quickTransactionStatus(\'' + item._id + '\', \'failed\')">Failed</button></div>'
+                + '</div>';
+        }).join('') || '<span class="text-muted">Khong co transaction nao.</span>';
+    } catch (err) {
+        document.getElementById('order-list').innerHTML = '<span class="text-danger">' + escapeHtml(err.message) + '</span>';
+    }
+}
+
+async function updateTransaction(status) {
+    let id = document.getElementById('t-id').value.trim();
+    if (!id) {
+        document.getElementById('t-msg').innerHTML = '<span class="text-danger">Vui long nhap transactionId.</span>';
+        return;
+    }
+    await quickTransactionStatus(id, status);
+}
+
+async function quickTransactionStatus(id, status) {
+    try {
+        await requestJson(BASE + '/transactions/' + id + '/status', {
+            method: 'PUT',
+            headers: authHeaders(true),
+            body: JSON.stringify({ status: status })
+        });
+        document.getElementById('t-msg').innerHTML = '<span class="text-success">Da cap nhat trang thai transaction.</span>';
+        toast('Da cap nhat transaction.', 'success');
+        if (document.getElementById('t-id').value.trim() === id) loadTransaction();
+        if (document.getElementById('o-id').value.trim()) loadByOrder();
+    } catch (err) {
+        document.getElementById('t-msg').innerHTML = '<span class="text-danger">' + escapeHtml(err.message) + '</span>';
+    }
+}
+
+function createClientMessageId() {
+    return 'msg_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10);
+}
+
+function currentChatRoomMatch(message) {
+    return selectedChatRoomId && String(message.room || '') === String(selectedChatRoomId);
+}
+
+function hasAdminMessage(messageId, clientMessageId) {
+    return adminChatMessages.some(function (item) {
+        if (messageId && String(item._id || '') === String(messageId)) return true;
+        if (clientMessageId && item.clientMessageId === clientMessageId) return true;
+        return false;
+    });
+}
+
+function pushAdminMessageIfNeeded(message) {
+    if (hasAdminMessage(message._id, message.clientMessageId)) return;
+    adminChatMessages.push(message);
+}
+
+function renderAdminMessages() {
+    let box = document.getElementById('admin-chat-messages');
+    if (!selectedChatUserId) {
+        box.innerHTML = '<div class="admin-chat-placeholder">Chua chon cuoc tro chuyen nao.</div>';
+        return;
+    }
+    if (!adminChatMessages.length) {
+        box.innerHTML = '<div class="admin-chat-placeholder">Chua co tin nhan nao trong phong nay.</div>';
+        return;
+    }
+    box.innerHTML = adminChatMessages.map(function (item) {
+        let type = item.senderType === 'ADMIN' ? 'user' : 'admin';
+        let senderName = item.senderType === 'ADMIN' ? 'Admin' : ((item.sender && (item.sender.fullName || item.sender.username)) || 'User');
+        return '<div class="chat-item ' + type + '"><div class="chat-bubble"><div>' + escapeHtml(item.content) + '</div><div class="chat-meta">' + escapeHtml(senderName) + ' • ' + new Date(item.createdAt).toLocaleString('vi-VN') + '</div></div></div>';
+    }).join('');
+    box.scrollTop = box.scrollHeight;
+}
+
+function renderChatRooms() {
+    let box = document.getElementById('chat-room-list');
+    if (!chatRooms.length) {
+        box.innerHTML = '<div class="p-3 text-muted">Chua co phong chat.</div>';
+        return;
+    }
+    box.innerHTML = chatRooms.map(function (room) {
+        let user = room.user || {};
+        let name = user.fullName || user.username || user.email || 'User';
+        let active = selectedChatUserId === String(user._id || '') ? ' active' : '';
+        let lastMessage = room.lastMessage || 'Chua co tin nhan';
+        return '<button class="admin-room-item' + active + '" onclick="selectChatRoom(\'' + String(user._id || '') + '\', \'' + String(room._id || '') + '\')"><div class="admin-room-name">' + escapeHtml(name) + '</div><div class="admin-room-meta">' + escapeHtml(lastMessage) + '</div></button>';
+    }).join('');
+}
+
+async function loadChatRooms() {
+    try {
+        chatRooms = await requestJson(BASE + '/chats/rooms', { headers: authHeaders() });
+        renderChatRooms();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+function connectAdminSocket() {
+    if (adminSocket) return;
+    adminSocket = io(window.location.origin, {
+        ackTimeout: 5000,
+        retries: 2,
+        transports: ['websocket'],
+        auth: { token: token }
+    });
+    adminSocket.on('connect_error', function (err) {
+        toast(err.message || 'Khong the ket noi chat admin.', 'danger');
+    });
+    adminSocket.on('joined-room', function (data) {
+        selectedChatUserId = String(data.userId || selectedChatUserId);
+    });
+    adminSocket.on('error-message', function (data) {
+        toast(data.message || 'Co loi chat.', 'danger');
+    });
+    adminSocket.on('new-message', function (message) {
+        if (currentChatRoomMatch(message)) {
+            pushAdminMessageIfNeeded(message);
+            if (message.clientMessageId) pendingAdminMessageIds.delete(message.clientMessageId);
+            renderAdminMessages();
+        }
+        loadChatRooms();
+    });
+}
+
+async function selectChatRoom(userId, roomId) {
+    selectedChatUserId = String(userId || '');
+    selectedChatRoomId = String(roomId || '');
+    let room = chatRooms.find(function (item) {
+        return String(item._id || '') === selectedChatRoomId;
+    }) || {};
+    let user = room.user || {};
+    let name = user.fullName || user.username || user.email || 'User';
+    document.getElementById('admin-chat-title').textContent = name;
+    document.getElementById('admin-chat-subtitle').textContent = 'Dang tro chuyen voi ' + name;
+    renderChatRooms();
+    renderAdminMessages();
+    if (adminSocket) adminSocket.emit('join-room', { userId: selectedChatUserId });
+    try {
+        adminChatMessages = await requestJson(BASE + '/chats/messages/' + selectedChatUserId, { headers: authHeaders() });
+        renderAdminMessages();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+function sendAdminMessage() {
+    let input = document.getElementById('admin-chat-input');
+    let content = input.value.trim();
+    if (!selectedChatUserId) {
+        toast('Hay chon user truoc khi tra loi.', 'danger');
+        return;
+    }
+    if (!content || !adminSocket) return;
+    let clientMessageId = createClientMessageId();
+    pendingAdminMessageIds.add(clientMessageId);
+    adminSocket.timeout(5000).emit('send-message', {
+        userId: selectedChatUserId,
+        content: content,
+        clientMessageId: clientMessageId
+    }, function (err, response) {
+        if (err) {
+            pendingAdminMessageIds.delete(clientMessageId);
+            toast('Gui tin nhan that bai. Ban thu lai giup minh.', 'danger');
+            return;
+        }
+        if (!response || !response.ok) {
+            pendingAdminMessageIds.delete(clientMessageId);
+            toast(response && response.message ? response.message : 'Gui tin nhan that bai', 'danger');
+        }
+    });
+    input.value = '';
+}
+
+document.addEventListener('keydown', function (e) {
+    let adminInput = document.getElementById('admin-chat-input');
+    if (document.activeElement === adminInput && e.key === 'Enter') {
+        sendAdminMessage();
+    }
+});
+
+function notificationCard(item, readAction) {
+    let badge = item.isRead ? '<span class="badge bg-secondary">Da doc</span>' : '<span class="badge bg-primary">Moi</span>';
+    let link = item.link ? '<a class="btn btn-sm btn-outline-primary" href="' + item.link + '">Mo</a>' : '';
+    let action = item.isRead ? '' : '<button class="btn btn-sm btn-primary" onclick="' + readAction + '(\'' + item._id + '\')">Danh dau da doc</button>';
+    return '<div class="border rounded-3 p-3 ' + (item.isRead ? '' : 'border-primary-subtle') + '"><div class="d-flex justify-content-between align-items-start gap-3"><div><div class="fw-semibold">' + escapeHtml(item.title || '') + '</div><div class="text-muted small">' + escapeHtml(item.content || '') + '</div><div class="small text-muted mt-2">' + escapeHtml(item.type || 'SYSTEM') + ' • ' + new Date(item.createdAt).toLocaleString('vi-VN') + '</div></div>' + badge + '</div><div class="d-flex gap-2 mt-3">' + action + link + '</div></div>';
+}
+
+async function loadAdminNotifications() {
+    try {
+        let list = await requestJson(BASE + '/notifications', { headers: authHeaders() });
+        document.getElementById('admin-notifications-list').innerHTML = list.map(function (item) {
+            return notificationCard(item, 'markOneAdminNotification');
+        }).join('') || '<div class="text-muted">Chua co thong bao nao.</div>';
+    } catch (err) {
+        document.getElementById('admin-notifications-list').innerHTML = '<div class="text-danger">' + escapeHtml(err.message) + '</div>';
+    }
+}
+
+async function markOneAdminNotification(id) {
+    try {
+        await requestJson(BASE + '/notifications/' + id + '/read', { method: 'PATCH', headers: authHeaders() });
+        loadAdminNotifications();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+async function markAllAdminNotifications() {
+    try {
+        await requestJson(BASE + '/notifications/read-all', { method: 'PATCH', headers: authHeaders() });
+        toast('Da danh dau tat ca thong bao la da doc.', 'success');
+        loadAdminNotifications();
+    } catch (err) {
+        toast(err.message, 'danger');
+    }
+}
+
+function renderSingleUploadResult(item) {
+    document.getElementById('upload-single-result').innerHTML = item && item.filename ? '<a href="/api/v1/upload/' + item.filename + '" target="_blank">' + escapeHtml(item.filename) + '</a>' : '<span class="text-danger">Upload that bai.</span>';
+}
+
+function renderMultipleUploadResult(list) {
+    document.getElementById('upload-multiple-result').innerHTML = (Array.isArray(list) ? list : []).map(function (item) {
+        return '<div><a href="/api/v1/upload/' + item.filename + '" target="_blank">' + escapeHtml(item.filename) + '</a></div>';
+    }).join('') || '<span class="text-danger">Khong co file nao.</span>';
+}
+
+function renderExcelResult(list) {
+    document.getElementById('upload-excel-result').innerHTML = (Array.isArray(list) ? list : []).map(function (item) {
+        if (item.success) return '<div class="text-success">Them thanh cong: ' + escapeHtml(item.title || '') + '</div>';
+        return '<div class="text-danger">Loi: ' + escapeHtml((item.errors || []).join(', ')) + '</div>';
+    }).join('') || '<span class="text-muted">Khong co ket qua.</span>';
+}
+
+async function uploadSingleImage() {
+    let input = document.getElementById('upload-single-file');
+    if (!input.files.length) {
+        toast('Hay chon 1 anh.', 'danger');
+        return;
+    }
+    let form = new FormData();
+    form.append('file', input.files[0]);
+    try {
+        let response = await fetch(BASE + '/upload/single', { method: 'POST', body: form });
+        let data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Upload that bai');
+        renderSingleUploadResult(data);
+        toast('Da upload anh.', 'success');
+    } catch (err) {
+        document.getElementById('upload-single-result').innerHTML = '<span class="text-danger">' + escapeHtml(err.message) + '</span>';
+    }
+}
+
+async function uploadMultipleImages() {
+    let input = document.getElementById('upload-multiple-files');
+    if (!input.files.length) {
+        toast('Hay chon it nhat 1 anh.', 'danger');
+        return;
+    }
+    let form = new FormData();
+    Array.from(input.files).forEach(function (file) {
+        form.append('files', file);
+    });
+    try {
+        let response = await fetch(BASE + '/upload/multiple', { method: 'POST', body: form });
+        let data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Upload that bai');
+        renderMultipleUploadResult(data);
+        toast('Da upload nhieu anh.', 'success');
+    } catch (err) {
+        document.getElementById('upload-multiple-result').innerHTML = '<span class="text-danger">' + escapeHtml(err.message) + '</span>';
+    }
+}
+
+async function uploadExcelFile() {
+    let input = document.getElementById('upload-excel-file');
+    if (!input.files.length) {
+        toast('Hay chon file Excel.', 'danger');
+        return;
+    }
+    let form = new FormData();
+    form.append('file', input.files[0]);
+    try {
+        let response = await fetch(BASE + '/upload/excel', { method: 'POST', body: form });
+        let data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Import that bai');
+        renderExcelResult(data);
+        toast('Da xu ly file Excel.', 'success');
+        loadProducts();
+        loadInventories();
+    } catch (err) {
+        document.getElementById('upload-excel-result').innerHTML = '<span class="text-danger">' + escapeHtml(err.message) + '</span>';
+    }
+}
+
+if (!token || role !== 'ADMIN') {
+    document.getElementById('denied').style.display = '';
+} else {
+    document.getElementById('app').style.display = '';
+    resetProduct();
+    resetCategory();
+    resetCoupon();
+    loadCategories();
+    loadProducts();
+}
+</script>
+</body>
+</html>

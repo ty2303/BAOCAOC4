@@ -1221,6 +1221,71 @@
                                                   }
                                   }
                               ]
+                 },
+                 {
+                     "name":  "PAYMENTS",
+                     "item":  [
+                                  {
+                                      "name":  "PUT confirm payment (ADMIN)",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{admin_token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/payments/{{order_id}}/confirm"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "PUT cancel payment (USER/ADMIN)",
+                                      "request":  {
+                                                      "method":  "PUT",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/payments/{{order_id}}/cancel"
+                                                  }
+                                  },
+                                  {
+                                      "name":  "POST pay online (USER)",
+                                      "request":  {
+                                                      "method":  "POST",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Content-Type",
+                                                                         "value":  "application/json"
+                                                                     },
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/payments/{{order_id}}/pay-online",
+                                                      "body":  {
+                                                                   "mode":  "raw",
+                                                                   "raw":  "{\n  \"method\": \"banking\"\n}"
+                                                               }
+                                                  }
+                                  },
+                                  {
+                                      "name":  "GET payment status (USER/ADMIN)",
+                                      "request":  {
+                                                      "method":  "GET",
+                                                      "header":  [
+                                                                     {
+                                                                         "key":  "Authorization",
+                                                                         "value":  "Bearer {{token}}"
+                                                                     }
+                                                                 ],
+                                                      "url":  "http://localhost:3000/api/v1/payments/{{order_id}}/status"
+                                                  }
+                                  }
+                              ]
                  }
              ],
     "variable":  [

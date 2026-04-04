@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chi tiết sản phẩm – ShopVN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+
+<div data-include="/layout/header.html"></div>
+
+<div class="container py-4" id="page-content">
+    <!-- Skeleton -->
+    <div id="skeleton-wrap">
+        <div class="row g-4">
+            <div class="col-md-5"><div class="skeleton-box" style="height:380px;border-radius:16px;"></div></div>
+            <div class="col-md-7">
+                <div class="skeleton-box mb-3" style="height:28px;width:70%;"></div>
+                <div class="skeleton-box mb-2" style="height:16px;width:40%;"></div>
+                <div class="skeleton-box mb-4" style="height:36px;width:50%;"></div>
+                <div class="skeleton-box mb-2" style="height:14px;width:90%;"></div>
+                <div class="skeleton-box mb-2" style="height:14px;width:80%;"></div>
+                <div class="skeleton-box mb-4" style="height:14px;width:60%;"></div>
+                <div class="skeleton-box" style="height:46px;border-radius:10px;"></div>
+            </div>
+        </div>
+    </div>
+    <!-- Real content -->
+    <div id="product-detail" style="display:none;"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast-msg" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="toast-text"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<div data-include="/layout/footer.html"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/v1';
+const params = new URLSearchParams(location.search);
+const productId = params.get('id');
+
+function fmt(n) { return Number(n).toLocaleString('vi-VN') + ' đ'; }
+function showToast(msg, type) {
+    let el = document.getElementById('toast-msg');
+    el.className = 'toast align-items-center border-0 text-bg-' + (type || 'success');
+    document.getElementById('toast-text').textContent = msg;
+    bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 }).show();
+}
+
+if (!productId) {
+    document.getElementById('skeleton-wrap').innerHTML =
+        '<div class="state-card"><div class="icon">⚠️</div><h4>Không tìm thấy sản phẩm</h4><a href="/products/" class="btn btn-primary">← Quay lại</a></div>';
+}
+
+/* ── Load product + reviews ── */
+async function loadDetail() {
+    try {
+        let [pRes, rRes] = await Promise.all([
+            fetch(BASE + '/products/' + productId),
+            fetch(BASE + '/reviews/product/' + productId)
+        ]);
+
+        if (!pRes.ok) throw new Error('Không tìm thấy');
+
+        let p = await pRes.json();
+        let reviews = rRes.ok ? await rRes.json() : [];
+
+        renderDetail(p, reviews);
+    } catch {
+        document.getElementById('skeleton-wrap').innerHTML =
+            '<div class="state-card"><div class="icon">⚠️</div><h4>Không thể tải sản phẩm</h4><a href="/products/" class="btn btn-primary mt-2">← Quay lại</a></div>';
+    }
+}
+
+/* ── Stars ── */
+function stars(r) {
+    let s = '';
+    for (let i = 1; i <= 5; i++)
+        s += `<span style="color:${i <= r ? '#ffc107' : '#dee2e6'}; font-size:1.1rem;">★</span>`;
+    return s;
+}
+
+let wishlistIds = [];
+
+function renderDetail(p, reviews) {
+    document.getElementById('skeleton-wrap').style.display = 'none';
+    let detail = document.getElementById('product-detail');
+    detail.style.display = '';
+
+    let avgRating = reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : null;
+    let hasImg = p.images && p.images.length > 0 && !p.images[0].includes('example.com');
+
+    detail.innerHTML = `
+    <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/home/">Trang chủ</a></li>
+            <li class="breadcrumb-item"><a href="/products/">Sản phẩm</a></li>
+            <li class="breadcrumb-item active">${p.title}</li>
+        </ol>
+    </nav>
+
+    <div class="row g-4">
+        <!-- Ảnh sản phẩm -->
+        <div class="col-md-5">
+            <div style="background:linear-gradient(135deg,#f0f2f5,#e2e6ea);border-radius:16px;
+                        height:380px;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+                ${hasImg
+                    ? `<img id="main-img" src="${p.images[0]}" alt="${p.title}" style="width:100%;height:100%;object-fit:cover;border-radius:16px;">`
+                    : `<div style="font-size:8rem;">👕</div>`}
+            </div>
+            ${p.images && p.images.length > 1 ? `
+            <div class="d-flex gap-2 mt-3 flex-wrap">
+                ${p.images.slice(0, 5).map((img, i) => `
+                <img src="${img}" onclick="document.getElementById('main-img').src='${img}'"
+                     style="width:68px;height:68px;object-fit:cover;border-radius:10px;cursor:pointer;
+                            border:2px solid ${i===0?'#0d6efd':'#dee2e6'};">`).join('')}
+            </div>` : ''}
+        </div>
+
+        <!-- Thông tin sản phẩm -->
+        <div class="col-md-7">
+            <h1 style="font-size:1.6rem;font-weight:800;color:#212529;">${p.title}</h1>
+            <div class="d-flex align-items-center gap-3 my-2">
+                <span class="badge bg-secondary" style="font-size:.8rem;">${p.category || ''}</span>
+                ${avgRating ? `<span>${stars(Math.round(avgRating))} <span class="text-muted" style="font-size:.88rem;">${avgRating} (${reviews.length} đánh giá)</span></span>` : ''}
+            </div>
+            <div style="font-size:2rem;font-weight:900;color:#e63946;margin:12px 0;">${fmt(p.price)}</div>
+            ${p.description ? `<p style="color:#555;line-height:1.7;margin-bottom:16px;">${p.description}</p>` : ''}
+            <div class="d-flex gap-2 mb-3">
+                <span class="badge bg-light text-dark border">SKU: ${p.sku || 'N/A'}</span>
+            </div>
+            <div class="d-flex gap-3 flex-wrap">
+                <button class="btn btn-dark px-4 py-2 fw-bold" style="border-radius:10px;font-size:1rem;" onclick="addToCart('${p._id}','${p.title}',this)">
+                    🛒 Thêm vào giỏ
+                </button>
+                <button class="btn btn-outline-danger px-3 py-2" style="border-radius:10px;font-size:1rem;"
+                        id="btn-wishlist" onclick="toggleWishlist('${p._id}',this)">
+                    ♡ Yêu thích
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="mt-5">
+        <h4 class="fw-bold mb-3">⭐ Đánh giá sản phẩm</h4>
+
+        <!-- Form viết đánh giá -->
+        <div id="review-form-wrap"></div>
+
+        <!-- Danh sách reviews -->
+        <div id="review-list" class="mt-4">
+            ${renderReviews(reviews)}
+        </div>
+    </div>`;
+
+    // Xử lý ảnh lỗi
+    let mainImg = document.getElementById('main-img');
+    if (mainImg) mainImg.addEventListener('error', function () {
+        this.parentNode.innerHTML = '<div style="font-size:8rem;">👕</div>';
+    });
+
+    renderReviewForm(p._id);
+    loadWishlistState(p._id);
+}
+
+function renderReviews(reviews) {
+    if (!reviews.length) return '<p class="text-muted">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>';
+    return reviews.map(r => `
+        <div class="card border-0 shadow-sm mb-3" style="border-radius:12px;">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>${r.user?.username || 'Ẩn danh'}</strong>
+                        <div>${stars(r.rating)}</div>
+                    </div>
+                    <small class="text-muted">${new Date(r.createdAt).toLocaleDateString('vi-VN')}</small>
+                </div>
+                <p class="mb-0 mt-2 text-muted" style="font-size:.92rem;">${r.comment || ''}</p>
+            </div>
+        </div>`).join('');
+}
+
+function renderReviewForm(productId) {
+    let token = localStorage.getItem('token');
+    let wrap = document.getElementById('review-form-wrap');
+    if (!token) {
+        wrap.innerHTML = '<div class="alert alert-light border" style="border-radius:12px;">Hãy <a href="/auth/">đăng nhập</a> để viết đánh giá.</div>';
+        return;
+    }
+    wrap.innerHTML = `
+        <div class="card border-0 shadow-sm" style="border-radius:14px;">
+            <div class="card-body">
+                <h6 class="fw-bold mb-3">✍️ Viết đánh giá của bạn</h6>
+                <div class="d-flex gap-2 mb-3" id="star-select">
+                    ${[1,2,3,4,5].map(i => `<span data-v="${i}" onclick="selectStar(${i})"
+                        style="font-size:1.8rem;cursor:pointer;color:#dee2e6;">★</span>`).join('')}
+                </div>
+                <textarea id="review-comment" class="form-control mb-3" rows="3"
+                          placeholder="Chia sẻ cảm nhận của bạn..." style="border-radius:10px;"></textarea>
+                <button class="btn btn-primary px-4" style="border-radius:9px;" onclick="submitReview('${productId}')">
+                    Gửi đánh giá
+                </button>
+            </div>
+        </div>`;
+}
+
+let selectedRating = 0;
+function selectStar(v) {
+    selectedRating = v;
+    document.querySelectorAll('#star-select span').forEach(s => {
+        s.style.color = parseInt(s.dataset.v) <= v ? '#ffc107' : '#dee2e6';
+    });
+}
+
+async function submitReview(productId) {
+    let token = localStorage.getItem('token');
+    let comment = document.getElementById('review-comment').value.trim();
+    if (!selectedRating) { showToast('Vui lòng chọn số sao', 'warning'); return; }
+    if (!comment) { showToast('Vui lòng viết nhận xét', 'warning'); return; }
+
+    try {
+        let res = await fetch(BASE + '/reviews', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ product: productId, rating: selectedRating, comment })
+        });
+        if (res.ok) {
+            showToast('Đã gửi đánh giá! ⭐', 'success');
+            loadDetail(); // reload
+        } else {
+            let d = await res.json();
+            showToast(d.message || 'Gửi thất bại', 'danger');
+        }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+}
+
+async function loadWishlistState(productId) {
+    let token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+        let res = await fetch(BASE + '/wishlists', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) return;
+        let items = await res.json();
+        wishlistIds = (Array.isArray(items) ? items : (items.items || [])).map(i =>
+            typeof i.product === 'object' ? i.product._id || i.product : i.product
+        );
+        updateWishlistBtn(productId);
+    } catch {}
+}
+
+function updateWishlistBtn(productId) {
+    let btn = document.getElementById('btn-wishlist');
+    if (!btn) return;
+    let inWL = wishlistIds.some(id => id === productId || id?.toString() === productId);
+    btn.innerHTML = inWL ? '❤️ Đã yêu thích' : '♡ Yêu thích';
+    btn.className = inWL ? 'btn btn-danger px-3 py-2' : 'btn btn-outline-danger px-3 py-2';
+    btn.style.borderRadius = '10px';
+}
+
+async function toggleWishlist(productId, btn) {
+    let token = localStorage.getItem('token');
+    if (!token) { showToast('Vui lòng đăng nhập', 'warning'); return; }
+
+    let inWL = wishlistIds.some(id => id === productId || id?.toString() === productId);
+    let url = inWL ? BASE + '/wishlists/remove-items' : BASE + '/wishlists/add-items';
+
+    try {
+        let res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ product: productId })
+        });
+        if (res.ok) {
+            if (inWL) {
+                wishlistIds = wishlistIds.filter(id => id !== productId && id?.toString() !== productId);
+                showToast('Đã xóa khỏi yêu thích', 'secondary');
+            } else {
+                wishlistIds.push(productId);
+                showToast('Đã thêm vào yêu thích ❤️', 'success');
+            }
+            updateWishlistBtn(productId);
+        }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+}
+
+async function addToCart(id, name, btn) {
+    let token = localStorage.getItem('token');
+    if (!token) {
+        showToast('Vui lòng đăng nhập để thêm vào giỏ!', 'warning');
+        setTimeout(() => window.location.href = '/auth/', 1200);
+        return;
+    }
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>';
+    try {
+        let res = await fetch(BASE + '/carts/add-items', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ product: id, quantity: 1 })
+        });
+        if (res.ok) showToast('Đã thêm "' + name + '" vào giỏ! 🎉', 'success');
+        else { let d = await res.json(); showToast(d.message || 'Thất bại', 'danger'); }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+    finally { btn.disabled = false; btn.innerHTML = '🛒 Thêm vào giỏ'; }
+}
+
+if (productId) loadDetail();
+</script>
+</body>
+</html>
