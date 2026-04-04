@@ -3,166 +3,332 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Giỏ hàng</title>
+    <title>Giỏ hàng - ShopVN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/layout/styles.css">
     <script src="/layout/load-layout.js" defer></script>
 </head>
 <body>
-    <div class="site-shell">
-        <div data-include="/layout/header.html"></div>
 
-        <main class="page-main page-stack">
-            <section class="page-card">
-                <h2 class="page-title">Giỏ hàng</h2>
-                <p class="page-text">Dán token USER vào đây để test các API giỏ hàng được bảo vệ bằng request từ trình duyệt.</p>
+<div data-include="/layout/header.html"></div>
 
-                <div class="field-group">
-                    <label for="tokenInput">Token USER</label>
-                    <textarea id="tokenInput" placeholder="Dán token USER vào đây"></textarea>
-                </div>
-
-                <div class="form-grid two-columns">
-                    <div class="field-group">
-                        <label for="productInput">ID sản phẩm</label>
-                        <input id="productInput" type="text" placeholder="Nhập ID sản phẩm">
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div id="cart-content">
+                <div id="cart-skeleton">
+                    <div class="cart-item-card">
+                        <div class="skeleton-box" style="width:88px;height:88px;border-radius:10px;flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton-box mb-2" style="height:16px;width:60%;"></div>
+                            <div class="skeleton-box mb-2" style="height:12px;width:35%;"></div>
+                            <div class="skeleton-box" style="height:34px;width:120px;"></div>
+                        </div>
                     </div>
-
-                    <div class="field-group">
-                        <label for="quantityInput">Số lượng</label>
-                        <input id="quantityInput" type="number" min="1" value="1">
+                    <div class="cart-item-card">
+                        <div class="skeleton-box" style="width:88px;height:88px;border-radius:10px;flex-shrink:0;"></div>
+                        <div style="flex:1;">
+                            <div class="skeleton-box mb-2" style="height:16px;width:50%;"></div>
+                            <div class="skeleton-box mb-2" style="height:12px;width:30%;"></div>
+                            <div class="skeleton-box" style="height:34px;width:120px;"></div>
+                        </div>
                     </div>
                 </div>
+                <div id="cart-items-list"></div>
+            </div>
+        </div>
 
-                <div class="button-row">
-                    <button id="getCartBtn">Lấy giỏ hàng</button>
-                    <button id="addItemBtn">Thêm sản phẩm</button>
-                    <button id="decreaseItemBtn" class="secondary-button">Giảm số lượng</button>
+        <div class="col-lg-4">
+            <div class="summary-card">
+                <h5>Tóm tắt đơn hàng</h5>
+
+                <div class="summary-row">
+                    <span class="text-muted">Tạm tính (<span id="item-count">0</span> sản phẩm)</span>
+                    <span id="subtotal">0 đ</span>
+                </div>
+                <div class="summary-row">
+                    <span class="text-muted">Phí vận chuyển</span>
+                    <span id="shipping-fee" class="text-success fw-semibold">Miễn phí</span>
+                </div>
+                <div class="summary-row">
+                    <span class="text-muted">Giảm giá</span>
+                    <span id="discount" class="text-danger">-0 đ</span>
+                </div>
+                <div class="summary-row total">
+                    <span>Tổng cộng</span>
+                    <span id="total-price">0 đ</span>
                 </div>
 
-                <p class="helper-text">API dùng để test: <code>/api/v1/carts</code>, <code>/api/v1/carts/add-items</code>, <code>/api/v1/carts/decrease-items</code>.</p>
-                <div id="cartStatusBox" class="status-box">Trạng thái: chưa gọi request</div>
-            </section>
-
-            <section class="page-card">
-                <h3 class="section-title">Kết quả đơn giản</h3>
-                <div id="cartList" class="cart-list">
-                    <p class="empty-text">Chưa có dữ liệu giỏ hàng.</p>
+                <div class="input-group coupon-wrap mb-2 mt-1">
+                    <input type="text" id="coupon-input" class="form-control form-control-sm" placeholder="Nhập mã giảm giá">
+                    <button class="btn btn-outline-secondary btn-sm" onclick="applyCoupon()">Áp dụng</button>
                 </div>
-            </section>
+                <div id="coupon-msg" style="font-size:.82rem; margin-bottom:8px;"></div>
+                <div class="text-muted" style="font-size:.8rem;">
+                    Mã giảm giá hiện mới kiểm tra hợp lệ, backend chưa trừ trực tiếp vào order.
+                </div>
 
-            <section class="page-card">
-                <h3 class="section-title">Dữ liệu JSON</h3>
-                <pre id="cartRawResult">null</pre>
-            </section>
-        </main>
-
-        <div data-include="/layout/footer.html"></div>
+                <button class="btn-checkout" id="btn-checkout" onclick="goCheckout()">
+                    Đến trang đặt hàng
+                </button>
+                <a href="/products/" class="btn btn-outline-secondary w-100 mt-2" style="border-radius:10px; font-size:.9rem;">
+                    Tiếp tục mua sắm
+                </a>
+            </div>
+        </div>
     </div>
+</div>
 
-    <script>
-        let tokenInput = document.getElementById('tokenInput');
-        let productInput = document.getElementById('productInput');
-        let quantityInput = document.getElementById('quantityInput');
-        let cartStatusBox = document.getElementById('cartStatusBox');
-        let cartList = document.getElementById('cartList');
-        let cartRawResult = document.getElementById('cartRawResult');
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast-msg" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="toast-text"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
 
-        function setStatus(text, isError) {
-            cartStatusBox.textContent = text;
-            cartStatusBox.classList.toggle('is-error', Boolean(isError));
+<div data-include="/layout/footer.html"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/v1';
+let cartData = null;
+let couponDiscount = 0;
+
+function showToast(msg, type) {
+    let el = document.getElementById('toast-msg');
+    el.className = 'toast align-items-center border-0 text-bg-' + (type || 'success');
+    document.getElementById('toast-text').textContent = msg;
+    bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 }).show();
+}
+
+function fmt(n) {
+    return Number(n || 0).toLocaleString('vi-VN') + ' đ';
+}
+
+function updateSummary() {
+    if (!cartData || !cartData.items) return;
+
+    let subtotal = cartData.items.reduce(function (sum, item) {
+        let price = item.product?.price || 0;
+        return sum + price * item.quantity;
+    }, 0);
+
+    let shipping = 0;
+    let total = Math.max(0, subtotal + shipping - couponDiscount);
+
+    document.getElementById('item-count').textContent = cartData.items.length;
+    document.getElementById('subtotal').textContent = fmt(subtotal);
+    document.getElementById('shipping-fee').textContent = shipping === 0 ? 'Miễn phí' : fmt(shipping);
+    document.getElementById('discount').textContent = '-' + fmt(couponDiscount);
+    document.getElementById('total-price').textContent = fmt(total);
+    document.getElementById('btn-checkout').disabled = cartData.items.length === 0;
+}
+
+function renderEmptyState() {
+    document.getElementById('cart-content').innerHTML = `
+        <div class="state-card">
+            <div class="icon">🛒</div>
+            <h4>Giỏ hàng trống</h4>
+            <p>Bạn chưa có sản phẩm nào trong giỏ.</p>
+            <a href="/products/" class="btn btn-primary px-4 py-2" style="border-radius:10px;">
+                Mua sắm ngay
+            </a>
+        </div>`;
+}
+
+function renderCart() {
+    document.getElementById('cart-skeleton').style.display = 'none';
+    let list = document.getElementById('cart-items-list');
+
+    if (!cartData || !cartData.items || cartData.items.length === 0) {
+        renderEmptyState();
+        updateSummary();
+        return;
+    }
+
+    list.innerHTML = cartData.items.map(function (item) {
+        let product = item.product || {};
+        let productId = typeof item.product === 'object' ? item.product._id : item.product;
+        let image = Array.isArray(product.images) && product.images.length ? product.images[0] : '';
+
+        return `
+            <div class="cart-item-card">
+                <div class="cart-img">
+                    ${image ? `<img src="${image}" alt="${product.title || 'product'}">` : '🛍'}
+                </div>
+                <div class="cart-info">
+                    <div class="name">${product.title || 'Sản phẩm'}</div>
+                    <div class="cat">${product.category?.name || product.category || ''}</div>
+                    <div class="price">${fmt(product.price || 0)}</div>
+                </div>
+                <div class="d-flex flex-column align-items-end gap-2">
+                    <button class="btn-remove" title="Xóa" onclick="removeItem('${productId}')">🗑</button>
+                    <div class="qty-control">
+                        <button onclick="changeQty('${productId}', -1)">−</button>
+                        <div class="qty-num">${item.quantity}</div>
+                        <button onclick="changeQty('${productId}', 1)">+</button>
+                    </div>
+                    <small class="text-muted" style="font-size:.78rem;">${fmt((product.price || 0) * item.quantity)}</small>
+                </div>
+            </div>`;
+    }).join('');
+
+    updateSummary();
+}
+
+async function loadCart() {
+    let token = localStorage.getItem('token');
+    if (!token) {
+        document.getElementById('cart-skeleton').style.display = 'none';
+        document.getElementById('cart-content').innerHTML = `
+            <div class="state-card">
+                <div class="icon">🔒</div>
+                <h4>Bạn chưa đăng nhập</h4>
+                <p>Đăng nhập để xem giỏ hàng và đặt hàng.</p>
+                <a href="/auth/" class="btn btn-primary px-4 py-2">Đăng nhập</a>
+            </div>`;
+        return;
+    }
+
+    try {
+        let res = await fetch(BASE + '/carts', {
+            headers: { Authorization: 'Bearer ' + token }
+        });
+
+        if (res.status === 403) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            location.reload();
+            return;
         }
 
-        function getToken() {
-            return tokenInput.value.trim();
-        }
+        let raw = await res.json();
+        cartData = { items: Array.isArray(raw) ? raw : (raw.items || []) };
 
-        function getPayload() {
-            return {
-                product: productInput.value.trim(),
-                quantity: Number(quantityInput.value || 1)
-            };
-        }
-
-        function renderCart(data) {
-            let items = Array.isArray(data) ? data : data && Array.isArray(data.items) ? data.items : [];
-
-            cartList.innerHTML = '';
-
-            if (items.length === 0) {
-                cartList.innerHTML = '<p class="empty-text">Giỏ hàng đang rỗng.</p>';
-                return;
-            }
-
-            items.forEach(function (item, index) {
-                let box = document.createElement('div');
-                box.className = 'cart-item';
-
-                box.innerHTML =
-                    '<h3>Item ' + (index + 1) + '</h3>' +
-                    '<p class="cart-meta"><strong>Product:</strong> ' + (item.product || '') + '</p>' +
-                    '<p class="cart-meta"><strong>Số lượng:</strong> ' + (item.quantity || 0) + '</p>';
-
-                cartList.appendChild(box);
-            });
-        }
-
-        async function requestCart(url, method, body) {
-            let token = getToken();
-
-            if (!token) {
-                alert('Bạn phải nhập token USER.');
-                return;
-            }
-
-            let options = {
-                method: method,
-                headers: {
-                    Authorization: 'Bearer ' + token,
-                    'Content-Type': 'application/json'
+        await Promise.all(cartData.items.map(async function (item) {
+            if (typeof item.product === 'string') {
+                let pr = await fetch(BASE + '/products/' + item.product);
+                if (pr.ok) {
+                    item.product = await pr.json();
                 }
-            };
-
-            if (body) {
-                options.body = JSON.stringify(body);
             }
+        }));
 
-            let response = await fetch(url, options);
-            let text = await response.text();
-            let data = null;
+        renderCart();
+    } catch (err) {
+        document.getElementById('cart-skeleton').style.display = 'none';
+        document.getElementById('cart-items-list').innerHTML =
+            '<div class="state-card"><div class="icon">⚠️</div><p>Không thể tải giỏ hàng.</p></div>';
+    }
+}
 
-            if (text) {
-                data = JSON.parse(text);
-            }
+async function changeQty(productId, delta) {
+    let token = localStorage.getItem('token');
+    let url = delta > 0 ? BASE + '/carts/add-items' : BASE + '/carts/decrease-items';
 
-            cartRawResult.textContent = JSON.stringify(data, null, 2);
-            setStatus('Trạng thái: ' + response.status + ' ' + response.statusText, !response.ok);
-            renderCart(data);
+    try {
+        let res = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ product: productId, quantity: 1 })
+        });
+
+        if (!res.ok) {
+            let data = await res.json();
+            showToast(data.message || 'Thao tác thất bại', 'danger');
+            return;
         }
 
-        document.getElementById('getCartBtn').onclick = function () {
-            requestCart('/api/v1/carts', 'GET').catch(function (error) {
-                setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
-                cartRawResult.textContent = error.message;
+        await loadCart();
+    } catch (err) {
+        showToast('Lỗi kết nối server', 'danger');
+    }
+}
+
+async function removeItem(productId) {
+    let item = cartData?.items?.find(function (it) {
+        let currentId = typeof it.product === 'object' ? it.product._id : it.product;
+        return currentId === productId;
+    });
+
+    let qty = item?.quantity || 1;
+    let token = localStorage.getItem('token');
+
+    try {
+        for (let i = 0; i < qty; i++) {
+            await fetch(BASE + '/carts/decrease-items', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: 'Bearer ' + token
+                },
+                body: JSON.stringify({ product: productId, quantity: 1 })
             });
-        };
+        }
 
-        document.getElementById('addItemBtn').onclick = function () {
-            let payload = getPayload();
+        showToast('Đã xóa sản phẩm khỏi giỏ', 'success');
+        await loadCart();
+    } catch (err) {
+        showToast('Lỗi kết nối server', 'danger');
+    }
+}
 
-            requestCart('/api/v1/carts/add-items', 'POST', payload).catch(function (error) {
-                setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
-                cartRawResult.textContent = error.message;
-            });
-        };
+async function applyCoupon() {
+    let code = document.getElementById('coupon-input').value.trim();
+    let token = localStorage.getItem('token');
+    let msg = document.getElementById('coupon-msg');
 
-        document.getElementById('decreaseItemBtn').onclick = function () {
-            let payload = getPayload();
+    if (!code) {
+        couponDiscount = 0;
+        msg.textContent = '';
+        updateSummary();
+        return;
+    }
 
-            requestCart('/api/v1/carts/decrease-items', 'POST', payload).catch(function (error) {
-                setStatus('Trạng thái: gọi request thất bại - ' + error.message, true);
-                cartRawResult.textContent = error.message;
-            });
-        };
-    </script>
+    let subtotal = cartData?.items?.reduce(function (sum, item) {
+        return sum + (item.product?.price || 0) * item.quantity;
+    }, 0) || 0;
+
+    try {
+        let res = await fetch(BASE + '/coupons/validate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                Authorization: 'Bearer ' + token
+            },
+            body: JSON.stringify({ code: code, orderValue: subtotal })
+        });
+
+        let data = await res.json();
+        if (res.ok) {
+            couponDiscount = data.discountAmount || 0;
+            msg.innerHTML = `<span class="text-success">Áp dụng thành công: giảm ${fmt(couponDiscount)}</span>`;
+        } else {
+            couponDiscount = 0;
+            msg.innerHTML = `<span class="text-danger">${data.message || 'Mã không hợp lệ'}</span>`;
+        }
+
+        updateSummary();
+    } catch (err) {
+        msg.innerHTML = '<span class="text-danger">Lỗi kết nối</span>';
+    }
+}
+
+function goCheckout() {
+    if (!cartData || !cartData.items || cartData.items.length === 0) {
+        showToast('Giỏ hàng đang trống', 'warning');
+        return;
+    }
+
+    window.location.href = '/checkout/';
+}
+
+loadCart();
+</script>
 </body>
 </html>

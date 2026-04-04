@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tài khoản – ShopVN</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/layout/styles.css">
+    <script src="/layout/load-layout.js" defer></script>
+</head>
+<body>
+
+<div data-include="/layout/header.html"></div>
+
+<div class="container py-4">
+    <div class="row g-4">
+
+        <!-- Sidebar -->
+        <div class="col-lg-3">
+            <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                <div class="card-body text-center py-4">
+                    <div style="font-size:4rem;">👤</div>
+                    <h6 class="fw-bold mt-2 mb-0" id="sidebar-name">Đang tải...</h6>
+                    <small class="text-muted" id="sidebar-email"></small>
+                </div>
+                <div class="list-group list-group-flush" style="border-radius:0 0 14px 14px;">
+                    <button onclick="showTab('profile')" id="tab-profile"
+                            class="list-group-item list-group-item-action active fw-semibold">
+                        👤 Thông tin cá nhân
+                    </button>
+                    <button onclick="showTab('address')" id="tab-address"
+                            class="list-group-item list-group-item-action fw-semibold">
+                        📍 Địa chỉ giao hàng
+                    </button>
+                    <a href="/orders/" class="list-group-item list-group-item-action fw-semibold">
+                        📦 Đơn hàng của tôi
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main content -->
+        <div class="col-lg-9">
+
+            <!-- Profile Tab -->
+            <div id="panel-profile">
+                <div class="card border-0 shadow-sm" style="border-radius:14px;">
+                    <div class="card-body p-4">
+                        <h5 class="fw-bold mb-4">👤 Thông tin cá nhân</h5>
+                        <div id="profile-content">
+                            <div class="skeleton-box mb-3" style="height:42px;border-radius:10px;"></div>
+                            <div class="skeleton-box mb-3" style="height:42px;border-radius:10px;"></div>
+                            <div class="skeleton-box" style="height:42px;border-radius:10px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Address Tab -->
+            <div id="panel-address" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold mb-0">📍 Địa chỉ giao hàng</h5>
+                    <button class="btn btn-primary btn-sm" style="border-radius:9px;"
+                            onclick="openAddressModal()">+ Thêm địa chỉ</button>
+                </div>
+                <div id="address-list"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Address Modal -->
+<div class="modal fade" id="addressModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content" style="border-radius:16px;">
+            <div class="modal-header border-0">
+                <h5 class="modal-title fw-bold" id="modal-title">Thêm địa chỉ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="addr-id">
+                <div class="row g-3">
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Họ tên</label>
+                        <input type="text" id="addr-fullname" class="form-control" placeholder="Nguyễn Văn A" style="border-radius:9px;">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Số điện thoại</label>
+                        <input type="text" id="addr-phone" class="form-control" placeholder="0901234567" style="border-radius:9px;">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Tỉnh / Thành phố</label>
+                        <input type="text" id="addr-province" class="form-control" placeholder="TP. Hồ Chí Minh" style="border-radius:9px;">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Quận / Huyện</label>
+                        <input type="text" id="addr-district" class="form-control" placeholder="Quận 1" style="border-radius:9px;">
+                    </div>
+                    <div class="col-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Phường / Xã</label>
+                        <input type="text" id="addr-ward" class="form-control" placeholder="Phường Bến Nghé" style="border-radius:9px;">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Địa chỉ chi tiết</label>
+                        <input type="text" id="addr-detail" class="form-control" placeholder="Số nhà, tên đường..." style="border-radius:9px;">
+                    </div>
+                    <div class="col-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="addr-default">
+                            <label class="form-check-label fw-semibold" for="addr-default" style="font-size:.88rem;">
+                                Đặt làm địa chỉ mặc định
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div id="addr-error" class="text-danger mt-2" style="font-size:.85rem;"></div>
+            </div>
+            <div class="modal-footer border-0">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="border-radius:9px;">Hủy</button>
+                <button type="button" class="btn btn-primary" style="border-radius:9px;" onclick="saveAddress()">Lưu</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast-msg" class="toast align-items-center border-0" role="alert">
+        <div class="d-flex">
+            <div class="toast-body fw-semibold" id="toast-text"></div>
+            <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast"></button>
+        </div>
+    </div>
+</div>
+
+<div data-include="/layout/footer.html"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const BASE = '/api/v1';
+let userData = null;
+
+function showToast(msg, type) {
+    let el = document.getElementById('toast-msg');
+    el.className = 'toast align-items-center border-0 text-bg-' + (type || 'success');
+    document.getElementById('toast-text').textContent = msg;
+    bootstrap.Toast.getOrCreateInstance(el, { delay: 2500 }).show();
+}
+
+function showTab(tab) {
+    document.getElementById('panel-profile').style.display = tab === 'profile' ? '' : 'none';
+    document.getElementById('panel-address').style.display = tab === 'address' ? '' : 'none';
+    document.getElementById('tab-profile').classList.toggle('active', tab === 'profile');
+    document.getElementById('tab-address').classList.toggle('active', tab === 'address');
+    if (tab === 'address') loadAddresses();
+}
+
+/* ── Load profile ── */
+async function loadProfile() {
+    let token = localStorage.getItem('token');
+    if (!token) {
+        document.getElementById('profile-content').innerHTML =
+            '<div class="state-card"><div class="icon">🔒</div><h4>Chưa đăng nhập</h4><a href="/auth/" class="btn btn-primary">Đăng nhập</a></div>';
+        return;
+    }
+
+    try {
+        let res = await fetch(BASE + '/auth/me', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error();
+        userData = await res.json();
+
+        document.getElementById('sidebar-name').textContent = userData.fullName || userData.username;
+        document.getElementById('sidebar-email').textContent = userData.email;
+
+        document.getElementById('profile-content').innerHTML = `
+            <form id="profile-form" novalidate>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Tên đăng nhập</label>
+                        <input type="text" class="form-control" value="${userData.username}" disabled style="border-radius:9px;background:#f8f9fa;">
+                        <small class="text-muted">Không thể thay đổi tên đăng nhập</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Họ tên</label>
+                        <input type="text" id="edit-fullname" class="form-control" value="${userData.fullName || ''}" placeholder="Nguyễn Văn A" style="border-radius:9px;">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold" style="font-size:.85rem;">Email</label>
+                        <input type="email" id="edit-email" class="form-control" value="${userData.email || ''}" style="border-radius:9px;">
+                    </div>
+                    <div class="col-12">
+                        <button type="button" class="btn btn-primary px-4" style="border-radius:9px;" onclick="saveProfile()">
+                            Lưu thay đổi
+                        </button>
+                    </div>
+                </div>
+            </form>`;
+    } catch {
+        document.getElementById('profile-content').innerHTML =
+            '<p class="text-danger">Không thể tải thông tin. Hãy chắc server đang chạy.</p>';
+    }
+}
+
+async function saveProfile() {
+    let token = localStorage.getItem('token');
+    let userId = localStorage.getItem('userId');
+    if (!userId) { showToast('Không tìm thấy userId', 'danger'); return; }
+
+    let fullName = document.getElementById('edit-fullname').value.trim();
+    let email    = document.getElementById('edit-email').value.trim();
+
+    try {
+        let res = await fetch(BASE + '/users/' + userId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify({ fullName, email })
+        });
+        let d = await res.json();
+        if (res.ok) {
+            showToast('Đã lưu thông tin!', 'success');
+            document.getElementById('sidebar-name').textContent = fullName || userData.username;
+        } else {
+            showToast(d.message || 'Lưu thất bại', 'danger');
+        }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+}
+
+/* ── Addresses ── */
+async function loadAddresses() {
+    let token = localStorage.getItem('token');
+    let list = document.getElementById('address-list');
+    list.innerHTML = `<div class="skeleton-box mb-3" style="height:100px;border-radius:14px;"></div>
+                      <div class="skeleton-box" style="height:100px;border-radius:14px;"></div>`;
+
+    try {
+        let res = await fetch(BASE + '/addresses', {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        let addrs = res.ok ? await res.json() : [];
+
+        if (!addrs.length) {
+            list.innerHTML = '<div class="text-center py-4 text-muted"><p>Chưa có địa chỉ nào.</p></div>';
+            return;
+        }
+
+        list.innerHTML = addrs.map(a => `
+            <div class="card border-0 shadow-sm mb-3" style="border-radius:14px;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <div class="fw-bold">${a.fullName} <span class="text-muted fw-normal">${a.phone}</span></div>
+                            <div class="text-muted mt-1" style="font-size:.9rem;">
+                                ${[a.detail, a.ward, a.district, a.province].filter(Boolean).join(', ')}
+                            </div>
+                            ${a.isDefault ? '<span class="badge bg-success mt-2">Mặc định</span>' : ''}
+                        </div>
+                        <div class="d-flex gap-2 flex-wrap">
+                            ${!a.isDefault ? `<button class="btn btn-sm btn-outline-secondary" style="border-radius:8px;"
+                                onclick="setDefault('${a._id}')">Đặt mặc định</button>` : ''}
+                            <button class="btn btn-sm btn-outline-primary" style="border-radius:8px;"
+                                onclick="editAddress(${JSON.stringify(a).replace(/"/g,'&quot;')})">Sửa</button>
+                            <button class="btn btn-sm btn-outline-danger" style="border-radius:8px;"
+                                onclick="deleteAddress('${a._id}')">Xóa</button>
+                        </div>
+                    </div>
+                </div>
+            </div>`).join('');
+    } catch {
+        list.innerHTML = '<p class="text-danger">Không thể tải địa chỉ.</p>';
+    }
+}
+
+function openAddressModal(data) {
+    document.getElementById('modal-title').textContent = data ? 'Sửa địa chỉ' : 'Thêm địa chỉ';
+    document.getElementById('addr-id').value      = data?._id || '';
+    document.getElementById('addr-fullname').value = data?.fullName || '';
+    document.getElementById('addr-phone').value    = data?.phone || '';
+    document.getElementById('addr-province').value = data?.province || '';
+    document.getElementById('addr-district').value = data?.district || '';
+    document.getElementById('addr-ward').value     = data?.ward || '';
+    document.getElementById('addr-detail').value   = data?.detail || '';
+    document.getElementById('addr-default').checked = data?.isDefault || false;
+    document.getElementById('addr-error').textContent = '';
+    new bootstrap.Modal(document.getElementById('addressModal')).show();
+}
+
+function editAddress(a) { openAddressModal(a); }
+
+async function saveAddress() {
+    let token = localStorage.getItem('token');
+    let id = document.getElementById('addr-id').value;
+    let body = {
+        fullName:  document.getElementById('addr-fullname').value.trim(),
+        phone:     document.getElementById('addr-phone').value.trim(),
+        province:  document.getElementById('addr-province').value.trim(),
+        district:  document.getElementById('addr-district').value.trim(),
+        ward:      document.getElementById('addr-ward').value.trim(),
+        detail:    document.getElementById('addr-detail').value.trim(),
+        isDefault: document.getElementById('addr-default').checked
+    };
+
+    if (!body.fullName || !body.phone || !body.province || !body.detail) {
+        document.getElementById('addr-error').textContent = 'Vui lòng điền đầy đủ thông tin.';
+        return;
+    }
+
+    try {
+        let url = id ? BASE + '/addresses/' + id : BASE + '/addresses';
+        let method = id ? 'PUT' : 'POST';
+        let res = await fetch(url, {
+            method,
+            headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+            body: JSON.stringify(body)
+        });
+        let d = await res.json();
+        if (res.ok) {
+            bootstrap.Modal.getInstance(document.getElementById('addressModal')).hide();
+            showToast(id ? 'Đã cập nhật địa chỉ' : 'Đã thêm địa chỉ mới', 'success');
+            loadAddresses();
+        } else {
+            document.getElementById('addr-error').textContent = d.message || 'Lưu thất bại';
+        }
+    } catch {
+        document.getElementById('addr-error').textContent = 'Lỗi kết nối';
+    }
+}
+
+async function setDefault(id) {
+    let token = localStorage.getItem('token');
+    try {
+        let res = await fetch(BASE + '/addresses/' + id + '/default', {
+            method: 'PATCH',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) { showToast('Đã đặt địa chỉ mặc định', 'success'); loadAddresses(); }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+}
+
+async function deleteAddress(id) {
+    if (!confirm('Xóa địa chỉ này?')) return;
+    let token = localStorage.getItem('token');
+    try {
+        let res = await fetch(BASE + '/addresses/' + id, {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) { showToast('Đã xóa địa chỉ', 'success'); loadAddresses(); }
+    } catch { showToast('Lỗi kết nối', 'danger'); }
+}
+
+loadProfile();
+</script>
+</body>
+</html>
