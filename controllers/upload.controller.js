@@ -11,7 +11,11 @@ module.exports = {
         if (!req.file) {
             return res.status(400).send({ message: 'Không có file nào được upload' });
         }
-        res.send({ path: req.file.path, filename: req.file.filename });
+        res.send({
+            path: req.file.path,
+            filename: req.file.filename,
+            url: '/api/v1/upload/' + req.file.filename
+        });
     },
 
     uploadMultiple: function (req, res) {
@@ -21,7 +25,8 @@ module.exports = {
         let result = req.files.map(f => ({
             filename: f.filename,
             path: f.path,
-            size: f.size
+            size: f.size,
+            url: '/api/v1/upload/' + f.filename
         }));
         res.send(result);
     },

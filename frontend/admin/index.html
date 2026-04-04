@@ -57,9 +57,16 @@
                         <div class="form-text mt-0 mb-2">Chi nhap so luong hang co san luc tao san pham.</div>
                         <label for="p-desc" class="form-label fw-semibold mb-1">Mo ta</label>
                         <textarea class="form-control mb-2" id="p-desc" rows="3" placeholder="Mo ta ngan gon ve san pham"></textarea>
-                        <label for="p-images" class="form-label fw-semibold mb-1">Danh sach anh</label>
-                        <textarea class="form-control mb-1" id="p-images" rows="4" placeholder="Moi dong la 1 link anh"></textarea>
-                        <div class="form-text mt-0 mb-2">Ban co the upload anh o tab Upload roi dan link vao day.</div>
+                        <label class="form-label fw-semibold mb-1">Anh san pham</label>
+                        <div class="mb-2">
+                            <div class="d-flex gap-2 align-items-center mb-1 flex-wrap">
+                                <input type="file" id="p-img-file" accept="image/*" multiple class="form-control form-control-sm" style="max-width:320px;">
+                                <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadProductImage()" id="btn-upload-img">Upload anh</button>
+                            </div>
+                            <div class="form-text mt-0 mb-2">Chon mot hoac nhieu anh. Sau khi upload, anh se tu gan vao san pham, khong can dan link.</div>
+                            <div id="p-img-preview" class="d-flex flex-wrap gap-2 mb-2"></div>
+                        </div>
+                        <textarea class="form-control d-none" id="p-images" rows="3" placeholder="Moi dong la 1 link anh"></textarea>
                         <div id="p-err" class="text-danger small mb-2"></div>
                         <div class="d-flex gap-2">
                             <button class="btn btn-primary" onclick="saveProduct()">Luu</button>
@@ -400,6 +407,7 @@ let adminChatMessages = [];
 let pendingAdminMessageIds = new Set();
 let adminJoinedUserId = '';
 let categoriesCache = [];
+let productImageUrls = [];
 
 function toast(message, type) {
     let el = document.getElementById('toast-msg');
@@ -471,12 +479,86 @@ async function requestJson(url, options) {
     return data;
 }
 
+function syncProductImages() {
+    document.getElementById('p-images').value = productImageUrls.join('\n');
+}
+
+function renderProductImagePreview() {
+    let preview = document.getElementById('p-img-preview');
+    if (!productImageUrls.length) {
+        preview.innerHTML = '<div class="text-muted small">Chua co anh nao duoc chon.</div>';
+        return;
+    }
+    preview.innerHTML = productImageUrls.map(function (url, index) {
+        return '<div class="position-relative">'
+            + '<img src="' + escapeHtml(url) + '" style="width:84px;height:84px;object-fit:cover;border-radius:10px;border:1px solid #dee2e6;background:#fff;" onerror="this.style.opacity=\'0.35\'">'
+            + '<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 translate-middle rounded-circle" style="width:26px;height:26px;line-height:1;padding:0;" onclick="removeProductImage(' + index + ')">x</button>'
+            + '</div>';
+    }).join('');
+}
+
+function setProductImages(urls) {
+    productImageUrls = Array.from(new Set((urls || []).map(function (item) {
+        return String(item || '').trim();
+    }).filter(Boolean)));
+    syncProductImages();
+    renderProductImagePreview();
+}
+
+function removeProductImage(index) {
+    productImageUrls = productImageUrls.filter(function (_, currentIndex) {
+        return currentIndex !== index;
+    });
+    syncProductImages();
+    renderProductImagePreview();
+}
+
 function resetProduct() {
     ['p-id', 'p-title', 'p-sku', 'p-category', 'p-price', 'p-desc', 'p-images'].forEach(function (id) {
         document.getElementById(id).value = '';
     });
     document.getElementById('p-stock').value = '0';
     document.getElementById('p-err').textContent = '';
+    document.getElementById('p-img-file').value = '';
+    setProductImages([]);
+}
+
+async function uploadProductImage() {
+    let fileInput = document.getElementById('p-img-file');
+    let files = Array.from(fileInput.files || []);
+    if (!files.length) { toast('Chon it nhat 1 anh truoc khi upload.', 'danger'); return; }
+
+    let btn = document.getElementById('btn-upload-img');
+    btn.disabled = true;
+    btn.textContent = 'Dang upload...';
+
+    try {
+        let formData = new FormData();
+        let endpoint = files.length > 1 ? '/upload/multiple' : '/upload/single';
+        files.forEach(function (file) {
+            formData.append(files.length > 1 ? 'files' : 'file', file);
+        });
+
+        let res = await fetch(BASE + endpoint, {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token },
+            body: formData
+        });
+        let data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Upload that bai');
+
+        let uploadedUrls = (Array.isArray(data) ? data : [data]).map(function (item) {
+            return item.url || ('/api/v1/upload/' + item.filename);
+        });
+        setProductImages(productImageUrls.concat(uploadedUrls));
+        fileInput.value = '';
+        toast('Upload anh thanh cong.', 'success');
+    } catch (err) {
+        toast(err.message, 'danger');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'Upload anh';
+    }
 }
 
 function fillProduct(product) {
@@ -486,8 +568,9 @@ function fillProduct(product) {
     document.getElementById('p-category').value = product.category || '';
     document.getElementById('p-price').value = product.price || '';
     document.getElementById('p-desc').value = product.description || '';
-    document.getElementById('p-images').value = (product.images || []).join('\n');
     document.getElementById('p-err').textContent = '';
+    document.getElementById('p-img-file').value = '';
+    setProductImages(product.images || []);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -526,7 +609,7 @@ async function saveProduct() {
         price: Number(document.getElementById('p-price').value || 0),
         stock: Number(document.getElementById('p-stock').value || 0),
         description: document.getElementById('p-desc').value.trim(),
-        images: document.getElementById('p-images').value.split('\n').map(function (x) { return x.trim(); }).filter(Boolean)
+        images: productImageUrls.slice()
     };
     if (!body.title || !body.sku || !body.category) {
         document.getElementById('p-err').textContent = 'Ten, SKU va danh muc la bat buoc.';
