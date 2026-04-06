@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-let mongoose = require('mongoose');
+const { default: mongoose } = require('mongoose');
 let wishlistModel = require('../schemas/wishlists');
 let productModel = require('../schemas/products');
 let { checkLogin, checkRole } = require('../utils/authHandler');

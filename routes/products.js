@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 let productModel = require('../schemas/products');
 let inventoryModel = require('../schemas/inventories');
-let mongoose = require('mongoose');
+const { default: mongoose } = require('mongoose');
 let slugify = require('slugify');
 
 // GET / - lấy tất cả sản phẩm, có filter theo query params

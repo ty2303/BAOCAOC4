@@ -1,6 +1,6 @@
 var express = require('express');
 var router = express.Router();
-let mongoose = require('mongoose');
+const { default: mongoose } = require('mongoose');
 let transactionModel = require('../schemas/transactions');
 let orderModel = require('../schemas/order');
 let inventoryModel = require('../schemas/inventories');
