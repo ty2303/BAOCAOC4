@@ -1,6 +1,6 @@
 let { Resend } = require('resend');
 
-const resend = new Resend('re_fnhX2Jj2_LGp6copnvR7xYUwHMCScRKba');
+let resend = new Resend('re_fnhX2Jj2_LGp6copnvR7xYUwHMCScRKba');
 
 module.exports = {
     sendMail: async function (to, url) {

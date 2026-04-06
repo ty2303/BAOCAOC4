@@ -1,7 +1,7 @@
 let jwt = require('jsonwebtoken');
 let userModel = require('../schemas/users');
 
-const JWT_SECRET = 'BAOCAOCHIUTHU4';
+let JWT_SECRET = 'BAOCAOCHIUTHU4';
 
 module.exports = {
     // Middleware kiểm tra đã đăng nhập chưa
