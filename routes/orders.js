@@ -1,25 +1,25 @@
 var express = require("express");
 var router = express.Router();
-const mongoose = require("mongoose");
-const orderModel = require("../schemas/order");
-const transactionModel = require("../schemas/transactions");
-const cartModel = require("../schemas/carts");
-const inventoryModel = require("../schemas/inventories");
-const addressModel = require("../schemas/addresses");
-const couponModel = require("../schemas/coupons");
-const { checkLogin, checkRole } = require("../utils/authHandler");
+let mongoose = require("mongoose");
+let orderModel = require("../schemas/order");
+let transactionModel = require("../schemas/transactions");
+let cartModel = require("../schemas/carts");
+let inventoryModel = require("../schemas/inventories");
+let addressModel = require("../schemas/addresses");
+let couponModel = require("../schemas/coupons");
+let { checkLogin, checkRole } = require("../utils/authHandler");
 
 // POST / - tạo đơn hàng từ giỏ hàng
 router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
-	const session = await mongoose.startSession();
+	let session = await mongoose.startSession();
 	session.startTransaction();
 
 	try {
-		const userId = req.userId;
-		const orderData = req.body;
+		let userId = req.userId;
+		let orderData = req.body;
 
 		// Lấy giỏ hàng, populate để lấy price
-		const cart = await cartModel
+		let cart = await cartModel
 			.findOne({ user: userId })
 			.session(session)
 			.populate("items.product");
@@ -30,14 +30,14 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 
 		// Kiểm tra tồn kho + tính tổng tiền
 		let totalAmount = 0;
-		const orderItems = [];
+		let orderItems = [];
 
-		for (const item of cart.items) {
+		for (let item of cart.items) {
 			if (!item.product) {
 				throw new Error("Không tìm thấy sản phẩm trong giỏ hàng");
 			}
 
-			const inventory = await inventoryModel
+			let inventory = await inventoryModel
 				.findOne({ product: item.product._id })
 				.session(session);
 
@@ -66,7 +66,7 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 		let discountAmount = 0;
 
 		if (orderData.couponCode) {
-			const coupon = await couponModel.findOne({
+			let coupon = await couponModel.findOne({
 				code: orderData.couponCode.trim().toUpperCase(),
 				isDeleted: false,
 			});
@@ -74,7 +74,7 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 			if (!coupon) throw new Error("Mã giảm giá không tồn tại");
 			if (!coupon.isActive) throw new Error("Mã giảm giá đã bị vô hiệu hóa");
 
-			const now = new Date();
+			let now = new Date();
 			if (coupon.startDate && now < coupon.startDate) {
 				throw new Error("Mã giảm giá chưa đến thời gian sử dụng");
 			}
@@ -113,8 +113,8 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 			);
 		}
 		// LOCK hàng (atomic) — chống oversale
-		for (const item of orderItems) {
-			const updatedInventory = await inventoryModel.findOneAndUpdate(
+		for (let item of orderItems) {
+			let updatedInventory = await inventoryModel.findOneAndUpdate(
 				{ product: item.productId, stock: { $gte: item.quantity } },
 				{ $inc: { stock: -item.quantity, reserved: +item.quantity } },
 				{ new: true, session },
@@ -130,7 +130,7 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 		if (orderData.shippingAddress && orderData.shippingAddress.trim()) {
 			shippingAddress = orderData.shippingAddress.trim();
 		} else if (orderData.addressId) {
-			const address = await addressModel.findOne({
+			let address = await addressModel.findOne({
 				_id: orderData.addressId,
 				user: userId,
 				isDeleted: false,
@@ -145,7 +145,7 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 				.filter(Boolean)
 				.join(", ");
 		} else {
-			const defaultAddress = await addressModel.findOne({
+			let defaultAddress = await addressModel.findOne({
 				user: userId,
 				isDeleted: false,
 				isDefault: true,
@@ -162,7 +162,7 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 		}
 
 		// Tạo order
-		const newOrder = new orderModel({
+		let newOrder = new orderModel({
 			userId: userId,
 			items: orderItems,
 			totalAmount: totalAmount,
@@ -175,7 +175,7 @@ router.post("/", checkLogin, checkRole(["USER"]), async (req, res) => {
 		await newOrder.save({ session });
 
 		// Tạo transaction
-		const transaction = new transactionModel({
+		let transaction = new transactionModel({
 			orderId: newOrder._id,
 			userId: userId,
 			amount: totalAmount,

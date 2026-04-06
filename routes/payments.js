@@ -9,7 +9,7 @@ let { checkLogin, checkRole } = require('../utils/authHandler');
 
 // PUT /:orderId/confirm - ADMIN xác nhận thanh toán (reserved → soldCount)
 router.put('/:orderId/confirm', checkLogin, checkRole(['ADMIN']), async function (req, res) {
-    const session = await mongoose.startSession();
+    let session = await mongoose.startSession();
     session.startTransaction();
 
     try {
@@ -56,7 +56,7 @@ router.put('/:orderId/confirm', checkLogin, checkRole(['ADMIN']), async function
 
 // PUT /:orderId/cancel - USER hoặc ADMIN hủy đơn chưa thanh toán (reserved → stock)
 router.put('/:orderId/cancel', checkLogin, async function (req, res) {
-    const session = await mongoose.startSession();
+    let session = await mongoose.startSession();
     session.startTransaction();
 
     try {
@@ -133,7 +133,7 @@ router.post('/:orderId/pay-online', checkLogin, checkRole(['USER']), async funct
 
         if (paymentSuccess) {
             // Xác nhận thanh toán: gọi thẳng logic confirm
-            const session = await mongoose.startSession();
+            let session = await mongoose.startSession();
             session.startTransaction();
             try {
                 let orderToConfirm = await orderModel.findById(orderId).session(session);
@@ -163,7 +163,7 @@ router.post('/:orderId/pay-online', checkLogin, checkRole(['USER']), async funct
             }
         } else {
             // Hủy thanh toán: gọi thẳng logic cancel
-            const session = await mongoose.startSession();
+            let session = await mongoose.startSession();
             session.startTransaction();
             try {
                 let orderToCancel = await orderModel.findById(orderId).session(session);

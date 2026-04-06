@@ -8,7 +8,7 @@ let crypto = require('crypto');
 let mailHandler = require('../utils/sendMailHandler');
 let { checkLogin } = require('../utils/authHandler');
 
-const JWT_SECRET = 'BAOCAOCHIUTHU4';
+let JWT_SECRET = 'BAOCAOCHIUTHU4';
 
 // POST /register - đăng ký tài khoản mới
 router.post('/register', async function (req, res) {

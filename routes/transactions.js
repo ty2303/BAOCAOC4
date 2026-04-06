@@ -96,7 +96,7 @@ router.put('/:id/status', checkLogin, checkRole(['ADMIN']), async function (req,
 
 // POST /order/:orderId/refund - hoàn tiền (USER)
 router.post('/order/:orderId/refund', checkLogin, checkRole(['USER']), async function (req, res) {
-    const session = await mongoose.startSession();
+    let session = await mongoose.startSession();
     session.startTransaction();
     try {
         let orderId = req.params.orderId;
