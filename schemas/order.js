@@ -39,6 +39,14 @@ let OrderSchema = new Schema({
         enum: ['cod', 'banking', 'momo'],
         required: true
     },
+    couponCode: {
+        type: String,
+        default: null
+    },
+    discountAmount: {
+        type: Number,
+        default: 0
+    },
     isDelete: {
         type: Boolean,
         default: false

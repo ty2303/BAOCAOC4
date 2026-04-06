@@ -6,6 +6,7 @@ let transactionModel = require('../schemas/transactions');
 let cartModel = require('../schemas/carts');
 let inventoryModel = require('../schemas/inventories');
 let addressModel = require('../schemas/addresses');
+let couponModel = require('../schemas/coupons');
 let { checkLogin, checkRole } = require('../utils/authHandler');
 
 // POST / - tạo đơn hàng từ giỏ hàng
@@ -51,6 +52,51 @@ router.post('/', checkLogin, checkRole(['USER']), async function (req, res) {
             });
         }
 
+        // Áp dụng mã giảm giá (nếu có)
+        let couponCode = null;
+        let discountAmount = 0;
+
+        if (orderData.couponCode) {
+            let coupon = await couponModel.findOne({
+                code: orderData.couponCode.trim().toUpperCase(),
+                isDeleted: false
+            });
+
+            if (!coupon) throw new Error('Mã giảm giá không tồn tại');
+            if (!coupon.isActive) throw new Error('Mã giảm giá đã bị vô hiệu hóa');
+
+            let now = new Date();
+            if (coupon.startDate && now < coupon.startDate) {
+                throw new Error('Mã giảm giá chưa đến thời gian sử dụng');
+            }
+            if (coupon.endDate && now > coupon.endDate) {
+                throw new Error('Mã giảm giá đã hết hạn');
+            }
+            if (coupon.maxUses > 0 && coupon.usedCount >= coupon.maxUses) {
+                throw new Error('Mã giảm giá đã hết lượt sử dụng');
+            }
+            if (totalAmount < coupon.minOrderValue) {
+                throw new Error('Đơn hàng tối thiểu ' + coupon.minOrderValue + 'đ để dùng mã này');
+            }
+
+            // Tính số tiền giảm
+            if (coupon.discountType === 'PERCENT') {
+                discountAmount = Math.round(totalAmount * coupon.discount / 100);
+            } else {
+                discountAmount = coupon.discount;
+            }
+
+            // Không giảm quá tổng tiền
+            if (discountAmount > totalAmount) {
+                discountAmount = totalAmount;
+            }
+
+            totalAmount = totalAmount - discountAmount;
+            couponCode = coupon.code;
+
+            // Tăng lượt sử dụng
+            await couponModel.findByIdAndUpdate(coupon._id, { $inc: { usedCount: 1 } }, { session });
+        }
         // LOCK hàng (atomic) — chống oversale
         for (let item of orderItems) {
             let updatedInventory = await inventoryModel.findOneAndUpdate(
@@ -91,6 +137,8 @@ router.post('/', checkLogin, checkRole(['USER']), async function (req, res) {
             userId: userId,
             items: orderItems,
             totalAmount: totalAmount,
+            couponCode: couponCode,
+            discountAmount: discountAmount,
             shippingAddress: shippingAddress,
             paymentMethod: orderData.paymentMethod,
             status: 'pending'
