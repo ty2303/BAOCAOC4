@@ -2,9 +2,10 @@ var app = require('../app');
 var http = require('http');
 var jwt = require('jsonwebtoken');
 let userModel = require('../schemas/users');
-let chatsService = require('../services/chats.service');
+let chatRoomModel = require('../schemas/chatRooms');
+let messageModel = require('../schemas/messages');
+let notificationModel = require('../schemas/notifications');
 let { Server } = require('socket.io');
-let notificationsService = require('../services/notifications.service');
 
 const JWT_SECRET = 'BAOCAOCHIUTHU4';
 
@@ -108,13 +109,49 @@ io.on('connection', function (socket) {
                 return socket.emit('error-message', { message: 'Role khong hop le' });
             }
 
-            let result = await chatsService.createMessage(
-                targetUserId,
-                socket.userId,
-                socket.roleName,
-                content,
-                clientMessageId
-            );
+            let room = await chatRoomModel.findOne({ user: targetUserId });
+
+            if (!room) {
+                room = await chatRoomModel.create({
+                    user: targetUserId,
+                    lastMessage: content,
+                    lastSenderType: socket.roleName
+                });
+            }
+
+            let existedMessage = null;
+            if (clientMessageId) {
+                existedMessage = await messageModel.findOne({
+                    room: room._id,
+                    clientMessageId: clientMessageId
+                });
+            }
+
+            let result;
+
+            if (existedMessage) {
+                result = {
+                    created: false,
+                    message: existedMessage
+                };
+            } else {
+                let newMessage = await messageModel.create({
+                    room: room._id,
+                    sender: socket.userId,
+                    senderType: socket.roleName,
+                    content: content,
+                    clientMessageId: clientMessageId || null
+                });
+
+                room.lastMessage = content;
+                room.lastSenderType = socket.roleName;
+                await room.save();
+
+                result = {
+                    created: true,
+                    message: newMessage
+                };
+            }
 
             let newMessage = result.message;
 
@@ -149,7 +186,7 @@ io.on('connection', function (socket) {
                         });
 
                         for (let admin of adminUsers) {
-                            await notificationsService.create({
+                            await notificationModel.create({
                                 user: admin._id,
                                 title: 'Tin nhan moi',
                                 content: (senderUser ? (senderUser.fullName || senderUser.username) : 'User') + ' vua gui tin nhan',
@@ -158,7 +195,7 @@ io.on('connection', function (socket) {
                             });
                         }
                     } else if (socket.roleName === 'ADMIN') {
-                        await notificationsService.create({
+                        await notificationModel.create({
                             user: targetUserId,
                             title: 'Admin da tra loi',
                             content: (senderUser ? (senderUser.fullName || senderUser.username) : 'Admin') + ' vua tra loi tin nhan cua ban',
